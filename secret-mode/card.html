@@ -1,0 +1,370 @@
+<title>Secret Mode Value Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#EEF0F3; --surface:#FFFFFF; --surface-2:#F6F7F9;
+    --ink:#161B22; --ink-2:#3F4A57; --muted:#727D8A;
+    --rule:#D8DCE2; --rule-soft:#E6E9ED;
+    --accent:#8A5A0F; --accent-soft:#F2E6D0;
+    --s-life:#2E6FC4; --s-recent:#B07515;
+    --shadow:0 1px 2px rgba(20,28,38,.06), 0 8px 24px -16px rgba(20,28,38,.28);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#101419; --surface:#1B2027; --surface-2:#222831;
+      --ink:#E9ECEF; --ink-2:#AEB8C4; --muted:#7D8895;
+      --rule:#2C333C; --rule-soft:#242B33;
+      --accent:#D9A64A; --accent-soft:#332A1B;
+      --s-life:#4E8AD8; --s-recent:#BC8320;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101419; --surface:#1B2027; --surface-2:#222831;
+    --ink:#E9ECEF; --ink-2:#AEB8C4; --muted:#7D8895;
+    --rule:#2C333C; --rule-soft:#242B33;
+    --accent:#D9A64A; --accent-soft:#332A1B;
+    --s-life:#4E8AD8; --s-recent:#BC8320;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:730px; margin:0 auto; padding-inline:18px; padding-block:0 64px;}
+
+  header.mast{
+    position:sticky; top:env(safe-area-inset-top, 0px); z-index:20;
+    background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(10px); border-bottom:1px solid var(--rule);
+  }
+  .mast-in{max-width:730px; margin:0 auto; padding:10px 18px; display:flex; align-items:baseline; justify-content:space-between; gap:12px;}
+  .mast-name{font-family:Archivo,sans-serif; font-weight:700; font-size:16px; letter-spacing:-.01em;}
+  .mast-meta{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; color:var(--muted); letter-spacing:.04em;}
+
+  .hero{padding-block:34px 8px;}
+  .kicker{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:12px;}
+  h1{font-family:Archivo,sans-serif; font-weight:700; font-size:clamp(29px,7vw,42px); line-height:1.05; letter-spacing:-.025em; margin:0 0 12px; text-wrap:balance;}
+  .dek{color:var(--ink-2); font-size:16px; max-width:58ch; margin:0;}
+
+  section{margin-top:40px;}
+  .eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:12px; margin-bottom:16px;}
+  .eyebrow::after{content:""; flex:1; height:1px; background:var(--rule);}
+  h2{font-family:Archivo,sans-serif; font-weight:700; font-size:21px; letter-spacing:-.015em; margin:0 0 14px; text-wrap:balance;}
+  p{margin:0 0 12px;}
+  p:last-child{margin-bottom:0;}
+
+  .card{background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:20px; box-shadow:var(--shadow);}
+
+  .quote{background:var(--surface); border:1px solid var(--rule); border-left:3px solid var(--accent); border-radius:4px 10px 10px 4px; padding:20px 22px; box-shadow:var(--shadow);}
+  .quote p{margin:0; font-family:Archivo,sans-serif; font-weight:600; font-size:19px; line-height:1.38; letter-spacing:-.012em; text-wrap:balance;}
+  .quote .after{margin-top:12px; font-family:"IBM Plex Sans",sans-serif; font-weight:400; font-size:14px; color:var(--ink-2); letter-spacing:0; line-height:1.55;}
+
+  /* dumbbell */
+  .legend{display:flex; flex-wrap:wrap; gap:16px; margin-bottom:22px; font-size:13px; color:var(--ink-2);}
+  .legend span{display:inline-flex; align-items:center; gap:7px;}
+  .swatch{width:11px; height:11px; border-radius:50%; flex:none;}
+  .sw-life{background:var(--s-life);} .sw-recent{background:var(--s-recent);}
+  .dumb{display:grid; grid-template-columns:1fr auto; gap:2px 12px; padding-block:4px 18px;}
+  .dumb + .dumb{border-top:1px solid var(--rule-soft); padding-top:16px;}
+  .dumb-name{font-weight:600; font-size:15px;}
+  .dumb-delta{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; font-size:15px; font-weight:500; text-align:right; white-space:nowrap;}
+  .dumb-note{grid-column:1/-1; font-size:12.5px; color:var(--muted); margin-bottom:10px;}
+  .dumb-track{grid-column:1/-1; position:relative; height:46px;}
+  .dumb-rail{position:absolute; left:0; right:0; top:23px; height:1px; background:var(--rule);}
+  .dumb-conn{position:absolute; top:21px; height:3px; border-radius:2px; background:var(--accent-soft);}
+  .dot{position:absolute; top:16px; width:15px; height:15px; border-radius:50%; transform:translateX(-50%); border:2px solid var(--surface);}
+  .dot.life{background:var(--s-life);} .dot.recent{background:var(--s-recent);}
+  .val{position:absolute; transform:translateX(-50%); white-space:nowrap; font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; font-size:12px; font-weight:500;}
+  .val.up{top:-2px; color:var(--s-life);} .val.down{bottom:-2px; color:var(--s-recent);}
+  .axis{position:relative; height:18px; margin-top:2px; border-top:1px solid var(--rule);}
+  .tick{position:absolute; transform:translateX(-50%); top:4px; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; color:var(--muted);}
+  .axis-cap{font-size:12.5px; color:var(--muted); margin-top:12px; line-height:1.5;}
+
+  /* scoring axes */
+  .axes{display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:10px; overflow:hidden;}
+  .ax{background:var(--surface); padding:14px;}
+  .ax b{display:block; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; font-weight:500;}
+  .ax span{font-size:13px; color:var(--ink-2); line-height:1.45;}
+
+  /* ladder */
+  .tier{background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:18px 20px; box-shadow:var(--shadow); margin-bottom:12px;}
+  .tier-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px;}
+  .tier-n{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; color:var(--accent); font-weight:500; flex:none;}
+  .tier-head h3{margin:0; font-family:Archivo,sans-serif; font-weight:600; font-size:17px; letter-spacing:-.012em;}
+  .tier-when{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; color:var(--muted); margin-left:auto; white-space:nowrap;}
+  .tier p{font-size:14px; color:var(--ink-2);}
+  .tier p.lead{color:var(--ink);}
+  .warn{margin-top:10px; padding:11px 13px; background:var(--accent-soft); border-radius:7px; font-size:13.5px; color:var(--ink);}
+  .warn b{font-weight:600;}
+
+  ol.qs{list-style:none; counter-reset:q; margin:0; padding:0;}
+  ol.qs li{counter-increment:q; position:relative; padding:12px 0 12px 40px; border-top:1px solid var(--rule-soft); font-size:15px;}
+  ol.qs li:first-child{border-top:none;}
+  ol.qs li::before{content:counter(q,decimal-leading-zero); position:absolute; left:0; top:13px; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px; color:var(--accent); font-weight:500;}
+  ol.qs em{color:var(--muted); font-style:normal; font-size:13.5px; display:block; margin-top:2px;}
+
+  ul.plain{margin:0; padding:0; list-style:none;}
+  ul.plain li{padding:11px 0 11px 26px; border-top:1px solid var(--rule-soft); font-size:14.5px; position:relative;}
+  ul.plain li:first-child{border-top:none;}
+  ul.plain li::before{content:"×"; position:absolute; left:4px; top:10px; color:var(--accent); font-size:16px; line-height:1.4;}
+  ul.plain.num{counter-reset:n;}
+  ul.plain.num li{counter-increment:n; padding-left:32px;}
+  ul.plain.num li::before{content:counter(n); left:5px; top:11px; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px; font-weight:500;}
+
+  .offer{padding:15px 0; border-top:1px solid var(--rule-soft);}
+  .offer:first-of-type{border-top:none; padding-top:2px;}
+  .offer h3{margin:0 0 5px; font-family:Archivo,sans-serif; font-weight:600; font-size:16px; display:flex; align-items:baseline; gap:9px; letter-spacing:-.01em;}
+  .offer h3 .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--accent); font-weight:500; flex:none;}
+  .offer p{margin:0; font-size:14px; color:var(--ink-2);}
+
+  .punch{margin-top:22px; text-align:center; padding:18px 16px; border:1px dashed var(--rule); border-radius:10px; font-family:Archivo,sans-serif; font-weight:600; font-size:16.5px; line-height:1.45; letter-spacing:-.01em; text-wrap:balance;}
+
+  .verify{margin-top:40px; padding:14px 16px; border:1px solid var(--rule); border-radius:8px; background:var(--surface-2); font-size:13px; color:var(--ink-2); line-height:1.55;}
+  .verify strong{color:var(--ink);}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums;}
+
+  @media (max-width:430px){
+    h2{font-size:19px;}
+    .tier-when{margin-left:0; width:100%;}
+    .quote p{font-size:17.5px;}
+  }
+</style>
+
+<header class="mast">
+  <div class="mast-in">
+    <span class="mast-name">Secret Mode</span>
+    <span class="mast-meta">KRITIQ · HALF DAY · 22 SEP 26</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="kicker">In-room card</div>
+    <h1>What are the IPs actually worth?</h1>
+    <p class="dek">Emona will want to sell. That needs an equity story built on IP Secret Mode owns — not on a licence. Which moves, in what order, and can the team run them.</p>
+  </div>
+
+  <section>
+    <div class="eyebrow">Open with</div>
+    <div class="quote">
+      <p>“Player trust is the leading indicator. Enterprise value is the lagging one.”</p>
+      <p class="after">Diligence reads revenue — where the asset has <em>been</em>. Sentiment tells you where it’s going, two to four quarters ahead. So you see erosion before it prices in, and you can evidence value creation before it lands in the P&amp;L. That second one is the hardest thing to do in a sale process.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The frame</div>
+    <div class="card">
+      <p>Galactic Racer has to go well, and going well buys <b>reputation, licensor relationships and proof of delivery</b> — all of which lift the multiple. It doesn’t lift the asset base: when the licence ends the revenue ends, and nothing transfers to an acquirer.</p>
+      <p>So the whole show is the owned IP. <b>And the plan can’t be written until the rights position is on one page</b> — owned outright vs publishing rights, what reverts and when, what’s already been granted away. Offer to be the person who writes that page.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Asset condition</div>
+    <h2>Lifetime score is a memory. The 30-day score is where the asset is heading.</h2>
+    <div class="card">
+      <div class="legend">
+        <span><i class="swatch sw-life"></i> Lifetime % positive</span>
+        <span><i class="swatch sw-recent"></i> Last 30 days % positive</span>
+      </div>
+
+      <div class="dumb">
+        <div class="dumb-name">Escape the Backrooms</div>
+        <div class="dumb-delta">−2</div>
+        <div class="dumb-note">~46k lifetime reviews · ~3.9k recent · stable — harvest now</div>
+        <div class="dumb-track">
+          <div class="dumb-rail"></div>
+          <div class="dumb-conn" style="left:72%; width:4%;"></div>
+          <div class="val up" style="left:76%;">88</div>
+          <div class="dot life" style="left:76%;"></div>
+          <div class="dot recent" style="left:72%;"></div>
+          <div class="val down" style="left:72%;">86</div>
+        </div>
+      </div>
+
+      <div class="dumb">
+        <div class="dumb-name">Chained Together</div>
+        <div class="dumb-delta">−9</div>
+        <div class="dumb-note">~20.5k lifetime · ~760 recent · softening — fix before you scale it</div>
+        <div class="dumb-track">
+          <div class="dumb-rail"></div>
+          <div class="dumb-conn" style="left:62%; width:18%;"></div>
+          <div class="val up" style="left:80%;">90</div>
+          <div class="dot life" style="left:80%;"></div>
+          <div class="dot recent" style="left:62%;"></div>
+          <div class="val down" style="left:62%;">81</div>
+        </div>
+      </div>
+
+      <div class="dumb">
+        <div class="dumb-name">SCUM</div>
+        <div class="dumb-delta">−13</div>
+        <div class="dumb-note">~38k lifetime · ~546 recent · eroding now, not historically</div>
+        <div class="dumb-track">
+          <div class="dumb-rail"></div>
+          <div class="dumb-conn" style="left:20%; width:26%;"></div>
+          <div class="val up" style="left:46%;">73</div>
+          <div class="dot life" style="left:46%;"></div>
+          <div class="dot recent" style="left:20%;"></div>
+          <div class="val down" style="left:20%;">60</div>
+        </div>
+      </div>
+
+      <div class="axis">
+        <span class="tick" style="left:0%;">50%</span>
+        <span class="tick" style="left:20%;">60%</span>
+        <span class="tick" style="left:40%;">70%</span>
+        <span class="tick" style="left:60%;">80%</span>
+        <span class="tick" style="left:80%;">90%</span>
+        <span class="tick" style="left:100%;">100%</span>
+      </div>
+      <p class="axis-cap">Steam % positive. Axis 50–100%. The gap is the story, not the score. A decaying trust curve is a depreciating asset — it just hasn’t priced in yet.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The principle</div>
+    <div class="quote">
+      <p>Sequence by evidence generated per pound spent — not revenue per pound spent.</p>
+      <p class="after">They’re building a plan a buyer has to <em>believe</em>. A proven, repeatable playbook earns a premium; an unproven roadmap gets discounted. So the early moves should be cheap, fast, low-risk and proof-generating — they’re what make the expensive later moves fundable.</p>
+    </div>
+    <div class="axes" style="margin-top:16px;">
+      <div class="ax"><b>Value type</b><span>One-off cash, recurring, or a new asset?</span></div>
+      <div class="ax"><b>Evidence</b><span>Does it prove the playbook repeats?</span></div>
+      <div class="ax"><b>Capacity</b><span>Sheffield months, attention, cash.</span></div>
+      <div class="ax"><b>Asset risk</b><span>Can it damage the trust curve?</span></div>
+      <div class="ax"><b>Timing</b><span>Does it land inside the window?</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The ladder</div>
+
+    <div class="tier">
+      <div class="tier-head"><span class="tier-n">01</span><h3>Harvest what’s proven</h3><span class="tier-when">0–9 MO · LOW RISK</span></div>
+      <p class="lead">Console and platform, territory partners, edition and pricing. Monetises demand that already exists without touching the game or the player promise.</p>
+      <p><b>Console for Chained Together is the standout</b> — 10M+ owners at $5 on PC, console audiences pay more for couch co-op, and Sheffield was explicitly built to do ports. An eastern partner is Tier 1 too: the partner does the work, and it proves the IP travels.</p>
+      <div class="warn">⚠️ <b>Every right you grant is a right the buyer doesn’t get.</b> A five-year exclusive signed eighteen months before a sale can cost more in valuation than it earns in fees. Short terms, reversion, change-of-control.</div>
+    </div>
+
+    <div class="tier">
+      <div class="tier-head"><span class="tier-n">02</span><h3>Prove recurring revenue</h3><span class="tier-when">6–18 MO · THE MULTIPLE</span></div>
+      <p class="lead">Content, cosmetics, seasonal cadence. This is what Sheffield exists for, and it’s the biggest single driver of how a buyer values the business — recurring revenue at a known content cost is an annuity; launch spikes are not.</p>
+      <p>Chained Together is the candidate <em>and</em> the biggest risk in the portfolio: every monetisation option renegotiates a deal 10 million people think closed at five dollars. Worth de-risking with evidence — and Lab42’s roadmap is being written right now.</p>
+    </div>
+
+    <div class="tier">
+      <div class="tier-head"><span class="tier-n">03</span><h3>The big bet</h3><span class="tier-when">18 MO+ · HIGH VARIANCE</span></div>
+      <p class="lead">A sequel — the only move that resets an IP’s clock and turns a decaying asset into a franchise. Also the one that eats the most capacity and is most likely to land after the window closes.</p>
+      <div class="warn"><b>An announced-but-unshipped sequel is worth far less at exit than a shipped, growing live title.</b> Only commit if it ships and shows traction inside the window — on the most defensibly owned IP, funded by Tiers 1 and 2.</div>
+    </div>
+
+    <div class="quote" style="margin-top:18px;">
+      <p>For a two-to-three year window, the sequel is usually the wrong first move.</p>
+      <p class="after">It’s the most exciting option and it feels the most like value creation, which is why teams reach for it. But ports and territories convert proven demand into cash and evidence in months, live content proves the annuity, and the sequel is what those two earn you the right to fund. Run it the other way round and you spend the whole window on the highest-variance bet with nothing proved behind it.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Two things diligence will find</div>
+    <div class="card">
+      <p><b>The Backrooms is shared creepypasta.</b> Competing Backrooms games are already on Steam. Secret Mode owns its execution — title, levels, brand, community, 46k reviews — but not the concept, and a buyer’s IP counsel will ask. Its moat is <em>audience and execution, not exclusivity</em>. Don’t put the most expensive bet on the least defensible IP.</p>
+      <p><b>A throughput-measured content studio depreciates the asset it was built to grow.</b> The live gripe that Backrooms updates feel “bland, buggy, short” is a value signal, not a QA one — the promise of that game is discovery, and a safe on-cadence level satisfies the roadmap while quietly breaking the promise. Invisible in MAU, obvious in review text, and it compounds.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">SCUM — their own insight, applied</div>
+    <div class="card">
+      <p>If it’s publishing with no ownership, it’s the Star Wars problem in a different costume: reputation and cash flow, real capacity consumed, no asset created. And harder — a persistent-world survival sim would be the most operationally demanding thing in the building, indefinitely, during the exact window they need capacity for their own IP.</p>
+      <ul class="plain num" style="margin-top:14px;">
+        <li><b>What’s the stake?</b> Equity, participation, or fee-for-service? Does an acquirer inherit anything?</li>
+        <li><b>Who owns the player relationship</b> across Gamepires, Splash Damage and Secret Mode? Who speaks, and who decides?</li>
+        <li><b>It arrives in deficit</b> — <span class="mono">73%</span> lifetime against <span class="mono">60%</span> recent, peak <span class="mono">45k → 5.5k</span>. Price the repair into the deal.</li>
+        <li><b>Your unfair advantage:</b> you were at Jagex when Jagex owned Gamepires. Nobody else they can call has that.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Execution</div>
+    <h2>Sequencing <em>is</em> the capacity plan.</h2>
+    <div class="card">
+      <p>Q4 load: a Star Wars launch on 6 Oct, two live roadmaps, a brand-new dev partner on Chained Together, a studio going <span class="mono">3 → 20</span>, and a SCUM decision. That isn’t a headcount problem — it’s <b>more simultaneous unmade decisions than any group of people can hold at once.</b> Saying that back to them plainly is probably the most useful sentence of the day.</p>
+      <ul class="plain num" style="margin-top:14px;">
+        <li><b>One big bet at a time.</b> One IP in expansion; everything else in harvest. The discipline isn’t doing less — it’s never having two things that need the same scarce attention.</li>
+        <li><b>Sheffield’s ramp is the master schedule.</b> Draw the plan against that curve, not against ambition. And the studio is itself an equity asset — known unit economics beat paying externals. Secker framed it as cost; it’s also an exit move, and they may not have said that out loud yet.</li>
+        <li><b>Stop rules agreed in advance.</b> What kills or defers a plan — decided calm, not at 11pm in launch week.</li>
+        <li><b>Decision rights.</b> Who commits Sheffield time, who arbitrates when two titles want the same sprint.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Ask</div>
+    <div class="card">
+      <ol class="qs">
+        <li>What does Emona need to be true in three years? What story do they tell a buyer?</li>
+        <li>Which IPs do you own outright, which are publishing rights, and what reverts when?<em>If this takes more than a minute to answer, that’s your first engagement.</em></li>
+        <li>What’s the most valuable thing you own that you’re doing nothing with?</li>
+        <li>If you could only run one value-creation plan for twelve months — which IP, which move?</li>
+        <li>What would a buyer discount you for today?</li>
+        <li>What rights have you already granted that a buyer would want back?</li>
+        <li>What does Sheffield get measured on in year one?<em>If the answer is throughput or cadence, that’s your opening.</em></li>
+        <li>When a drop ships, how do you know a month later whether it grew the asset or just fed the calendar?</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Close with</div>
+    <div class="card">
+      <div class="offer">
+        <h3><span class="n">01</span> IP value-creation plan</h3>
+        <p>Rights position, asset condition, ranked moves per IP, sequenced against Sheffield’s real capacity curve, with the proof points each stage generates. <em>A growth plan built on internal optimism gets discounted in diligence. One built on an independent read survives it.</em></p>
+      </div>
+      <div class="offer">
+        <h3><span class="n">02</span> Player Trust baselines</h3>
+        <p>The evidence layer that makes the plan real, and valuable standing alone. Chained Together’s monetisation call, the Backrooms quality bar, and a SCUM pre-transition baseline — deal budget rather than operating budget.</p>
+      </div>
+      <div class="offer">
+        <h3><span class="n">03</span> The operating rhythm</h3>
+        <p>Standing cadence: what’s happening with players, what changed, what to do. The mechanism that keeps a 20-person content team from optimising for the only thing it can measure.</p>
+      </div>
+      <div class="punch">Sheffield answers “can we ship it?”<br>Kritiq answers “should we, and did it land?”</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The free, easy yes</div>
+    <div class="quote">
+      <p>Whiteboard their Galactic Racer launch triage in the room.</p>
+      <p class="after">Signal tiers, named owners, escalation thresholds, and a written “what we will not do in week one” list. It costs an hour, it’s genuinely useful fifteen days out, and every later conversation starts from “that was useful” rather than from a deck.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Don’t</div>
+    <div class="card">
+      <ul class="plain">
+        <li>Drop back to live-ops. It’s the comfortable conversation and a tenth of the value — every thread comes back to what this does to the asset.</li>
+        <li>Arrive as a tool or a dashboard. They’re data-literate and they just hired engineers.</li>
+        <li>Say the games are dying. 88–90% is healthy: <b>protect and compound</b>, not rescue.</li>
+        <li>Be dismissive about Star Wars. Agree fast, name what it does buy, move on — nobody wants to hear their biggest launch doesn’t matter two weeks out.</li>
+        <li>Use RuneScape more than once. It’s now the case study rather than colour: two decades of compounding one IP is exactly what they’re trying to do.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="verify">
+    <strong>Before you walk in:</strong> every figure here is from public secondary sources — Steam and the publisher’s own site were unreachable when this was compiled, so pull live review counts on your phone. And if discovery shows nobody actually owns the live titles’ direction, split between publishing, Sheffield and the external devs, say so. It’s the most valuable thing you could tell them, and the thing an insider can’t.
+  </div>
+
+</div>
