@@ -124,6 +124,28 @@
 
   .punch{margin-top:22px; text-align:center; padding:18px 16px; border:1px dashed var(--rule); border-radius:10px; font-family:Archivo,sans-serif; font-weight:600; font-size:16.5px; line-height:1.45; letter-spacing:-.01em; text-wrap:balance;}
 
+  .tbl-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  table.grid{border-collapse:collapse; width:100%; min-width:430px; font-size:14px;}
+  table.grid th, table.grid td{text-align:left; padding:11px 12px; border-bottom:1px solid var(--rule-soft); vertical-align:top;}
+  table.grid thead th{
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--muted); font-weight:500; border-bottom:1px solid var(--rule);
+  }
+  table.grid tbody th{font-weight:600; white-space:nowrap;}
+  table.grid tr:last-child td, table.grid tr:last-child th{border-bottom:none;}
+  .chip{display:inline-flex; align-items:baseline; gap:6px; white-space:nowrap;}
+  .chip i{font-style:normal; font-size:12px; line-height:1;}
+  .chip.done{color:var(--muted);}
+  .chip.gap{color:var(--accent); font-weight:600;}
+  .chip.wip{color:var(--ink-2);}
+  .chip small{display:block; color:var(--muted); font-weight:400; font-size:12px; margin-top:2px; white-space:normal;}
+  table.seq{border-collapse:collapse; width:100%; min-width:520px; font-size:14px;}
+  table.seq th, table.seq td{text-align:left; padding:13px 12px; border-bottom:1px solid var(--rule-soft); vertical-align:top;}
+  table.seq thead th{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:500; border-bottom:1px solid var(--rule);}
+  table.seq tbody th{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--accent); white-space:nowrap; font-weight:500;}
+  table.seq td.bet{font-weight:600;}
+  table.seq td.par{color:var(--ink-2); font-size:13.5px;}
+  table.seq tr:last-child th, table.seq tr:last-child td{border-bottom:none;}
   .verify{margin-top:40px; padding:14px 16px; border:1px solid var(--rule); border-radius:8px; background:var(--surface-2); font-size:13px; color:var(--ink-2); line-height:1.55;}
   .verify strong{color:var(--ink);}
   .mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums;}
@@ -163,6 +185,37 @@
     <div class="card">
       <p>Galactic Racer has to go well, and going well buys <b>reputation, licensor relationships and proof of delivery</b> — all of which lift the multiple. It doesn’t lift the asset base: when the licence ends the revenue ends, and nothing transfers to an acquirer.</p>
       <p>So the whole show is the owned IP. <b>And the plan can’t be written until the rights position is on one page</b> — owned outright vs publishing rights, what reverts and when, what’s already been granted away. Offer to be the person who writes that page.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The equity story</div>
+    <h2>Two repeatable playbooks, at three different stages.</h2>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table class="grid">
+          <thead><tr><th>Title</th><th>Console expansion</th><th>UGC / mod support</th></tr></thead>
+          <tbody>
+            <tr>
+              <th>Escape the Backrooms</th>
+              <td><span class="chip done"><i>✓</i>Shipped<small>PS5 / XSX May ’26, Switch 2 Jul ’26</small></span></td>
+              <td><span class="chip gap"><i>●</i>Gap<small>None official. Active Nexus scene.</small></span></td>
+            </tr>
+            <tr>
+              <th>Chained Together</th>
+              <td><span class="chip gap"><i>●</i>Gap<small>PC only, at 10M+ copies.</small></span></td>
+              <td><span class="chip done"><i>✓</i>Shipped<small>Map editor + Workshop, v1.8.4</small></span></td>
+            </tr>
+            <tr>
+              <th>SCUM</th>
+              <td><span class="chip wip"><i>◐</i>Underway<small>In dev, long delayed. Park it until trust turns.</small></span></td>
+              <td><span class="chip wip"><i>◐</i>Underway<small>Mod framework, 2026 target.</small></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:16px;">Not “we own some games” but <b>“we have two playbooks, and here they are applied across three titles with measured results.”</b> A buyer pays a multiple for a repeatable system and discounts a collection of one-offs.</p>
+      <p>Every gap in that table is a costed, de-risked move rather than a leap — each title is missing exactly the playbook another has already proved. And they don’t compete for the same capacity at the same time.</p>
     </div>
   </section>
 
@@ -306,6 +359,29 @@
         <li><b>Stop rules agreed in advance.</b> What kills or defers a plan — decided calm, not at 11pm in launch week.</li>
         <li><b>Decision rights.</b> Who commits Sheffield time, who arbitrates when two titles want the same sprint.</li>
       </ul>
+      <div class="tbl-wrap" style="margin-top:20px;">
+        <table class="seq">
+          <thead><tr><th>When</th><th>Big bet — senior attention</th><th>In parallel — low decision load</th></tr></thead>
+          <tbody>
+            <tr>
+              <th>NOW–Q1</th>
+              <td class="bet">Chained Together console port</td>
+              <td class="par">Backrooms hygiene + lobby cap · SCUM diagnosis (external, no studio time) · Galactic Racer launch</td>
+            </tr>
+            <tr>
+              <th>Q2–Q3</th>
+              <td class="bet">Backrooms Workshop</td>
+              <td class="par">CT monetisation architecture decision · SCUM anti-cheat if signed</td>
+            </tr>
+            <tr>
+              <th>Q4+</th>
+              <td class="bet">The sequel — on whichever IP the evidence supports by then</td>
+              <td class="par">Compound both Workshops · SCUM console once the trust curve turns</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:14px; font-size:13px; color:var(--muted);">Drawn against Sheffield’s 3 → 20 ramp. The discipline isn’t doing less — it’s never having two things that need the same scarce attention.</p>
     </div>
   </section>
 
