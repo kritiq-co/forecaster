@@ -4,41 +4,37 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
   :root{
-    --bg:#EEF0F3; --surface:#FFFFFF; --surface-2:#F6F7F9;
+    --bg:#EEF0F3; --surface:#FFFFFF;
     --ink:#161B22; --ink-2:#3F4A57; --muted:#727D8A;
     --rule:#D8DCE2; --rule-soft:#E6E9ED;
     --accent:#8A5A0F; --accent-soft:#F2E6D0;
-    --shadow:0 1px 2px rgba(20,28,38,.06), 0 10px 30px -20px rgba(20,28,38,.3);
+    --shadow:0 1px 2px rgba(20,28,38,.05), 0 14px 40px -28px rgba(20,28,38,.35);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --bg:#101419; --surface:#1B2027; --surface-2:#222831;
+      --bg:#101419; --surface:#1B2027;
       --ink:#E9ECEF; --ink-2:#AEB8C4; --muted:#7D8895;
       --rule:#2C333C; --rule-soft:#242B33;
       --accent:#D9A64A; --accent-soft:#332A1B;
-      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.75);
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 40px -28px rgba(0,0,0,.8);
     }
   }
   :root[data-theme="dark"]{
-    --bg:#101419; --surface:#1B2027; --surface-2:#222831;
+    --bg:#101419; --surface:#1B2027;
     --ink:#E9ECEF; --ink-2:#AEB8C4; --muted:#7D8895;
     --rule:#2C333C; --rule-soft:#242B33;
     --accent:#D9A64A; --accent-soft:#332A1B;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.75);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 40px -28px rgba(0,0,0,.8);
   }
 
   body{
     background:var(--bg); color:var(--ink);
     font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-    font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased;
+    font-size:16.5px; line-height:1.68; -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:700px; margin:0 auto; padding-inline:20px; padding-block:0 80px;}
-  p{margin:0 0 15px; max-width:66ch;}
-  p:last-child{margin-bottom:0;}
-  strong,b{font-weight:600;}
-  em{font-style:italic;}
+  .page{max-width:640px; margin:0 auto; padding-inline:20px; padding-block:0 72px;}
+  p{margin:0 0 17px; max-width:64ch;}
 
-  /* draft banner */
   .banner{
     background:var(--accent-soft); border-bottom:1px solid var(--rule);
     padding:9px 20px; text-align:center;
@@ -46,300 +42,116 @@
     letter-spacing:.06em; color:var(--ink);
   }
 
-  /* masthead */
-  .mast{padding-block:44px 0;}
-  .mast-rule{height:3px; background:var(--accent); width:46px; margin-bottom:22px;}
-  .mast-kicker{
+  .head{padding-block:46px 30px;}
+  .head-rule{height:3px; width:44px; background:var(--accent); margin-bottom:20px;}
+  .head-from{
     font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
-    letter-spacing:.15em; text-transform:uppercase; color:var(--accent); margin-bottom:14px;
+    letter-spacing:.15em; text-transform:uppercase; color:var(--accent);
   }
-  h1{
-    font-family:Archivo,sans-serif; font-weight:700; font-size:clamp(31px,7vw,44px);
-    line-height:1.06; letter-spacing:-.027em; margin:0 0 20px; text-wrap:balance;
-  }
-  dl.meta{
-    margin:0; display:grid; grid-template-columns:auto 1fr; gap:0;
-    border-top:1px solid var(--rule); margin-top:26px;
-  }
-  dl.meta dt{
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px;
-    letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
-    padding:10px 20px 10px 0; border-bottom:1px solid var(--rule-soft); white-space:nowrap;
-  }
-  dl.meta dd{margin:0; padding:10px 0; border-bottom:1px solid var(--rule-soft); font-size:14.5px;}
-
-  section{margin-top:46px;}
-  .eyebrow{
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.15em;
-    text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:14px; margin-bottom:18px;
-  }
-  .eyebrow::after{content:""; flex:1; height:1px; background:var(--rule);}
-  h2{font-family:Archivo,sans-serif; font-weight:700; font-size:23px; letter-spacing:-.018em; margin:0 0 16px; text-wrap:balance;}
-  h3{font-family:Archivo,sans-serif; font-weight:600; font-size:18px; letter-spacing:-.013em; margin:0 0 8px;}
-
-  .lede{font-size:18px; line-height:1.55; color:var(--ink);}
-
-  .pull{
-    margin:26px 0; padding:22px 24px; background:var(--surface);
-    border:1px solid var(--rule); border-left:3px solid var(--accent);
-    border-radius:4px 10px 10px 4px; box-shadow:var(--shadow);
-  }
-  .pull p{margin:0; font-family:Archivo,sans-serif; font-weight:600; font-size:19px;
-          line-height:1.4; letter-spacing:-.012em; text-wrap:balance;}
-
-  /* phases */
-  .phase{
-    position:relative; padding:0 0 30px 34px; border-left:1px solid var(--rule);
-  }
-  .phase:last-of-type{border-left-color:transparent; padding-bottom:6px;}
-  .phase::before{
-    content:""; position:absolute; left:-6px; top:6px; width:11px; height:11px;
-    border-radius:50%; background:var(--accent); border:2px solid var(--bg);
-  }
-  .phase-n{
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px;
-    letter-spacing:.11em; text-transform:uppercase; color:var(--accent);
-    display:block; margin-bottom:5px;
-  }
-  .phase ul{margin:12px 0 0; padding-left:0; list-style:none;}
-  .phase ul li{position:relative; padding:9px 0 9px 18px; border-top:1px solid var(--rule-soft); font-size:15px;}
-  .phase ul li:first-child{border-top:none;}
-  .phase ul li::before{content:""; position:absolute; left:2px; top:17px; width:5px; height:5px; border-radius:50%; background:var(--muted);}
-  .note{
-    margin-top:14px; padding:12px 15px; background:var(--accent-soft);
-    border-radius:8px; font-size:14.5px;
+  .head-sub{
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+    letter-spacing:.06em; color:var(--muted); margin-top:7px;
   }
 
-  .tbl-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch; margin:20px 0;}
-  table{border-collapse:collapse; width:100%; font-size:14.5px;}
-  table.horizon{min-width:400px;}
-  table.deliv{min-width:470px;}
-  th,td{text-align:left; padding:11px 12px; border-bottom:1px solid var(--rule-soft); vertical-align:top;}
-  thead th{
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.09em;
-    text-transform:uppercase; color:var(--muted); font-weight:500; border-bottom:1px solid var(--rule);
+  h2{
+    font-family:Archivo,sans-serif; font-weight:700; font-size:19px;
+    letter-spacing:-.015em; margin:36px 0 14px; text-wrap:balance;
   }
-  tbody tr:last-child td, tbody tr:last-child th{border-bottom:none;}
-  td.num{font-family:"IBM Plex Mono",ui-monospace,monospace; color:var(--accent); width:1%; padding-right:0; font-size:12px;}
-  td.when{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12.5px; color:var(--muted); white-space:nowrap;}
-
-  ul.check{margin:0; padding:0; list-style:none;}
-  ul.check li{position:relative; padding:11px 0 11px 28px; border-top:1px solid var(--rule-soft); font-size:15.5px;}
-  ul.check li:first-child{border-top:none;}
-  ul.check li::before{content:"\2713"; position:absolute; left:3px; top:10px; color:var(--accent); font-size:14px;}
-
-  ul.asks{margin:0; padding:0; list-style:none;}
-  ul.asks li{padding:14px 0; border-top:1px solid var(--rule-soft); font-size:15.5px;}
-  ul.asks li:first-child{border-top:none;}
-
-  .terms{background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:22px 24px; box-shadow:var(--shadow);}
-  .terms dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:0;}
-  .terms dt{
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.09em;
-    text-transform:uppercase; color:var(--muted); padding:13px 20px 13px 0;
-    border-top:1px solid var(--rule-soft); white-space:nowrap;
+  .area{margin-bottom:20px;}
+  .area-name{
+    font-family:Archivo,sans-serif; font-weight:600; font-size:16.5px;
+    color:var(--accent); letter-spacing:-.008em;
   }
-  .terms dd{margin:0; padding:13px 0; border-top:1px solid var(--rule-soft); font-size:15px;}
-  .terms dt:first-of-type, .terms dd:first-of-type{border-top:none; padding-top:0;}
+  .area p{margin-top:4px;}
+
+  ul.outline{
+    margin:0; padding:20px 24px; list-style:none;
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:10px; box-shadow:var(--shadow);
+  }
+  ul.outline li{
+    position:relative; padding:11px 0 11px 20px;
+    border-top:1px solid var(--rule-soft); font-size:15.5px; line-height:1.55;
+  }
+  ul.outline li:first-child{border-top:none;}
+  ul.outline li::before{
+    content:""; position:absolute; left:2px; top:20px;
+    width:5px; height:5px; border-radius:50%; background:var(--accent);
+  }
   .tbc{
-    display:inline-block; padding:3px 10px; border-radius:20px;
-    background:var(--accent-soft); color:var(--accent);
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; font-weight:500;
-    letter-spacing:.04em;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:14px;
+    color:var(--accent); background:var(--accent-soft);
+    padding:1px 7px; border-radius:4px;
   }
 
-  .closing{margin-top:20px;}
-  .closing h3{margin-bottom:7px;}
-  .closing > div{padding:20px 0; border-top:1px solid var(--rule);}
-
-  .sig{
-    margin-top:52px; padding-top:22px; border-top:3px solid var(--accent);
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px;
-    color:var(--muted); letter-spacing:.04em;
+  .sign{
+    margin-top:34px; padding-top:20px; border-top:1px solid var(--rule);
+    font-family:Archivo,sans-serif; font-weight:600; font-size:18px;
+  }
+  .foot{
+    margin-top:44px; padding-top:18px; border-top:3px solid var(--accent);
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px;
+    color:var(--muted); letter-spacing:.05em;
   }
 
   @media (max-width:430px){
-    body{font-size:15.5px;}
-    h2{font-size:20px;}
-    .pull p{font-size:17.5px;}
-    dl.meta, .terms dl{grid-template-columns:1fr;}
-    dl.meta dt, .terms dt{padding-bottom:0; border-bottom:none;}
-    dl.meta dd{padding-top:2px;}
-    .terms dd{padding-top:3px; border-top:none;}
-    .terms dt{border-top:1px solid var(--rule-soft);}
-    .terms dt:first-of-type{border-top:none;}
+    body{font-size:16px;}
+    h2{font-size:18px;}
   }
 </style>
 
-<div class="banner">DRAFT v0.1 · FEES AND START DATE TO BE CONFIRMED</div>
+<div class="banner">DRAFT · FEE AND DATES TO BE CONFIRMED</div>
 
-<div class="wrap">
+<div class="page">
 
-  <div class="mast">
-    <div class="mast-rule"></div>
-    <div class="mast-kicker">Engagement proposal</div>
-    <h1>Portfolio &amp; Programme</h1>
-    <dl class="meta">
-      <dt>From</dt><dd>Kritiq</dd>
-      <dt>For</dt><dd>Dan Robinson, VP Marketing</dd>
-      <dt>Sponsor</dt><dd>Ed Blincoe, CEO</dd>
-      <dt>Shape</dt><dd>Six months · 2–3 days per week</dd>
-    </dl>
+  <div class="head">
+    <div class="head-rule"></div>
+    <div class="head-from">Kritiq → Secret Mode</div>
+    <div class="head-sub">PROPOSAL · FOR DAN ROBINSON · SEPTEMBER 2026</div>
   </div>
 
-  <section>
-    <div class="eyebrow">The problem, as you described it</div>
-    <p class="lede">Secret Mode is building faster than its planning can keep up with. Two things follow from that, and you named both.</p>
-    <p><b>There is no coherent plan for the catalogue.</b> Titles you want to do more with — Chained Together on console, Asia, others — have no value-creation plan behind them. There’s no tiering, so no shared language for what a tentpole is versus what catalogue is. And that isn’t a documentation gap: <em>you can’t tier a portfolio before you know what each title could become.</em> The growth plans have to come first.</p>
-    <p><b>And nobody holds the pen.</b> Commercial signs the deals and secures the platform commitments. Marketing takes titles to market. The franchise plan that should sit between them — what this IP becomes, in what order, funded how — belongs to neither, so it doesn’t get written.</p>
-    <p>Underneath both: eleven launches of note currently sitting in March 2027, four live-service titles under a single owner, and a marketing group of 25–30 running on community feedback with no analyst and no telemetry.</p>
-  </section>
+  <p>Hi Dan,</p>
 
-  <section>
-    <div class="eyebrow">What this engagement is</div>
-    <div class="pull">
-      <p>Someone picks up the pen, produces a v1.0 the whole business believes in, and then makes themselves unnecessary.</p>
-    </div>
-    <p>Three phases over six months, with programme management running throughout.</p>
-  </section>
+  <p>Thanks for the time yesterday — genuinely useful session, and good to meet Joe properly. As promised, here’s my understanding of where things stand and what I’d propose. Correct anything I’ve got wrong before we go further.</p>
 
-  <section>
-    <div class="eyebrow">The work</div>
+  <h2>Where Secret Mode is</h2>
 
-    <div class="phase">
-      <span class="phase-n">Phase 1 · Weeks 1–6</span>
-      <h3>Establish the picture</h3>
-      <p>You can’t plan a portfolio you can’t see. This phase produces the facts that currently live in several heads and no documents.</p>
-      <ul>
-        <li><b>Catalogue audit.</b> Every title: rights position (owned outright / publishing rights / rev-share), what reverts and when, what’s already been granted away, contribution, current state.</li>
-        <li><b>Data and evidence audit.</b> What feeds exist, what’s contractually available from dev partners, and what’s simply unplumbed. The output is a specification, not a wish.</li>
-        <li><b>The March 2027 map.</b> All eleven launches on one page with their real dependencies and real constraints, separating what’s fixed from what merely feels fixed.</li>
-      </ul>
-      <div class="note"><b>Immediate output:</b> a de-conflicted launch calendar. This is the first thing that changes, because it’s the thing hurting now.</div>
-    </div>
+  <p>You’re growing quickly and the portfolio has grown with you. Galactic Racer lands in a fortnight, a second top-tier IP is signed, Secret Code is standing up, and you now have four live-service titles where eighteen months ago you had a slate of premium launches. That’s a good problem, but it’s outrun the planning around it — and you were all clear-eyed that mistakes are coming purely from load rather than from judgement.</p>
 
-    <div class="phase">
-      <span class="phase-n">Phase 2 · Weeks 6–16</span>
-      <h3>Portfolio Map v1.0</h3>
-      <p>The destination: <b>what success looks like in January 2028</b>, and the route to it.</p>
-      <ul>
-        <li><b>Value-creation plan per priority IP.</b> What each title could become, the ranked moves, and the evidence behind each. Chained Together console and Asia are the obvious first two.</li>
-        <li><b>Tiering, derived not declared.</b> Once each title has a growth thesis, Tier A / B / C assigns itself — and so does the resourcing each tier earns.</li>
-        <li><b>Sequenced against real capacity</b>, including Secret Code’s ramp and the Lab42 handover on Chained Together.</li>
-        <li><b>The Jan 2028 picture</b> — roughly fifteen months out. Far enough to complete real moves, close enough to plan against honestly.</li>
-      </ul>
+  <p>The goal, as I understood it, is to know what success looks like by January 2028, and to have a plan behind each title that the whole business believes in.</p>
 
-      <p style="margin-top:18px;">Worth being precise about what that horizon can and can’t contain, because it sets expectations for everyone who reads the map:</p>
-      <div class="tbl-wrap">
-        <table class="horizon">
-          <thead><tr><th>By Jan 2028</th><th>Meaning</th></tr></thead>
-          <tbody>
-            <tr><td><b>Shipped</b></td><td>Moves completed and earning — platform and territory expansion, live content</td></tr>
-            <tr><td><b>Proved</b></td><td>A playbook applied more than once, with measured results behind it</td></tr>
-            <tr><td><b>In flight, de-risked</b></td><td>Bigger bets committed and in production, with the evidence that justified them</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>A sequel, for instance, is a Jan 2028 <em>in-flight</em> item, not a shipped one. Saying that up front is more useful than discovering it in month twelve.</p>
+  <h2>Areas that need immediate support</h2>
 
-      <div class="note">One deliberate sequencing note: the map defines the <b>portfolio state</b> at Jan 2028 before it attaches financial targets to it. Until the catalogue audit shows what each title actually contributes, any revenue number would be invented rather than derived — and a target nobody can trace back to a base is a target nobody defends six months later. Financials attach in Phase 2, once Phase 1 has given us something to build them on.</div>
+  <div class="area">
+    <span class="area-name">Portfolio plan.</span>
+    <p>There’s no coherent view across the catalogue, and several titles you want to do more with — Chained Together on console, Asia — have no value-creation plan behind them. Tiering is the obvious first instinct, but it can’t come first: until each title has a growth thesis, you can’t say which should be a tentpole and which is catalogue. The growth plans come first and the tiering falls out of them.</p>
+  </div>
 
-      <p style="margin-top:16px;">Built <em>with</em> Marketing, Commercial and Publishing as co-authors, not delivered to them. A plan the business believes in is one it helped write; anything else is a document that gets praised once and ignored thereafter.</p>
-    </div>
+  <div class="area">
+    <span class="area-name">Programme management.</span>
+    <p>Eleven launches of note currently sit in March 2027, and the team is living week to week. What’s missing is a holistic view of the whole slate — real dependencies, real constraints, and an honest separation of what’s genuinely fixed from what only feels fixed. This is the thing hurting now, so it’s where I’d start.</p>
+  </div>
 
-    <div class="phase">
-      <span class="phase-n">Phase 3 · Weeks 16–26</span>
-      <h3>Make it run without me</h3>
-      <p>A map is worthless if refreshing it requires me.</p>
-      <ul>
-        <li><b>Decision rights.</b> Who owns the franchise plan for each IP, who signs what, and how Marketing, Commercial, Publishing and Secret Code interlock. Written down.</li>
-        <li><b>The operating cadence.</b> A portfolio review rhythm that actually runs — agenda, inputs, templates, owners — so the map stays current rather than going stale in a drive.</li>
-        <li><b>The evidence layer.</b> Analyst role scoped and, ideally, filled; the first telemetry pipes specified and in progress.</li>
-        <li><b>The permanent pen.</b> Role definition for whoever owns this after me, and support recruiting them.</li>
-      </ul>
-    </div>
-  </section>
+  <div class="area">
+    <span class="area-name">Ownership.</span>
+    <p>Commercial signs the deals and secures the platform commitments. Marketing takes titles to market. The franchise plan that sits between them belongs to neither, so it doesn’t get written. That’s the gap I’d be filling — and the job is to fill it, build a v1.0 everyone believes in, then hand the pen to someone internal and make myself unnecessary.</p>
+  </div>
 
-  <section>
-    <div class="eyebrow">Running throughout</div>
-    <h2>Programme management</h2>
-    <p>The portfolio map is the destination. The launch calendar is what stops you falling over on the way there. Both run from week one — the calendar is continuous, holistic oversight across the whole slate, not a Phase 1 deliverable that then sits still.</p>
-  </section>
+  <h2>Outline of engagement</h2>
 
-  <section>
-    <div class="eyebrow">Deliverables</div>
-    <div class="tbl-wrap">
-      <table class="deliv">
-        <thead><tr><th colspan="2">Artefact</th><th>By</th></tr></thead>
-        <tbody>
-          <tr><td class="num">01</td><td>De-conflicted portfolio launch calendar, maintained</td><td class="when">Wk 6, then live</td></tr>
-          <tr><td class="num">02</td><td>Catalogue audit: rights, contribution, state</td><td class="when">Wk 6</td></tr>
-          <tr><td class="num">03</td><td>Data &amp; evidence specification</td><td class="when">Wk 6</td></tr>
-          <tr><td class="num">04</td><td>Value-creation plans, priority IPs</td><td class="when">Wk 16</td></tr>
-          <tr><td class="num">05</td><td><b>Portfolio Map v1.0 — the Jan 2028 destination</b></td><td class="when">Wk 16</td></tr>
-          <tr><td class="num">06</td><td>Tiering framework and assignments</td><td class="when">Wk 16</td></tr>
-          <tr><td class="num">07</td><td>Decision rights across Marketing / Commercial / Publishing / Secret Code</td><td class="when">Wk 22</td></tr>
-          <tr><td class="num">08</td><td>Operating cadence: rhythm, templates, owners</td><td class="when">Wk 24</td></tr>
-          <tr><td class="num">09</td><td>Analyst role scoped; permanent role defined</td><td class="when">Wk 26</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+  <ul class="outline">
+    <li>Two to three days a week across all three areas, including a weekly sync.</li>
+    <li>Initial term <span class="tbc">12 October 2026 to 11 April 2027</span>.</li>
+    <li><span class="tbc">£xxxx</span> over the 26-week period, invoiced monthly (<span class="tbc">£xk</span>).</li>
+    <li>To be reviewed in early January to agree what the second half looks like.</li>
+  </ul>
 
-  <section>
-    <div class="eyebrow">What good looks like at month six</div>
-    <ul class="check">
-      <li>The exec, Commercial and Publishing all reference the same portfolio map, unprompted.</li>
-      <li>March 2027 has become a survivable shape.</li>
-      <li>Tier assignments are agreed, and resourcing follows them.</li>
-      <li>Two or three value-creation plans are <b>in execution</b>, not just written.</li>
-      <li>Someone internal holds the pen, and the review rhythm runs whether or not I’m in the room.</li>
-      <li>An analyst is in post and the first data is flowing.</li>
-    </ul>
-  </section>
+  <p style="margin-top:26px;">One ask: I’d like a short conversation with Alison before we finalise this. The franchise plan is as much Commercial’s as Marketing’s, and it’ll be a better piece of work — and a far more likely one to stick — if she’s shaped the scope rather than received it.</p>
 
-  <section>
-    <div class="eyebrow">What I need from you</div>
-    <ul class="asks">
-      <li><b>Ed to introduce it, Dan to own it.</b> The plan spans Marketing and Commercial, so it needs to be visibly a company artefact rather than one function’s initiative.</li>
-      <li><b>Alison involved from the start</b>, as a named co-author rather than a reviewer. The franchise plan is as much Commercial’s as Marketing’s — a plan Commercial didn’t help write is a plan Commercial won’t execute. If it’s useful, I’m happy to speak with her <em>before</em> this is finalised, so the scope reflects what Commercial needs from it too.</li>
-      <li><b>Access</b> to dev partner contracts, whatever P&amp;L exists, platform relationships, and the data feeds.</li>
-      <li><b>A standing hour a week with Joe</b>, whose four live titles are where most of this becomes real.</li>
-    </ul>
-  </section>
+  <p>Two honest notes to finish. First, I think an analyst is the cheapest gap you have to close, and I’d rather say that now than quietly work around it for six months — with no telemetry and nobody crunching the feeds you already have, everything any of us recommends is an argument rather than evidence. Second, my gut says March will need more than three days a week, but I’d rather start here and flex than pad it up front. I’m here to help.</p>
 
-  <section>
-    <div class="eyebrow">Shape and terms</div>
-    <div class="terms">
-      <dl>
-        <dt>Commitment</dt>
-        <dd>Six months, 2–3 days per week.</dd>
-        <dt>Structure</dt>
-        <dd>A fixed monthly retainer rather than a day rate — the March period will not respect a day count, and neither of us should spend that month arguing about overage.</dd>
-        <dt>Review</dt>
-        <dd>Jointly at month three: what’s working, what to drop, whether the shape still fits.</dd>
-        <dt>Fees</dt>
-        <dd><span class="tbc">to be confirmed</span></dd>
-        <dt>Start</dt>
-        <dd><span class="tbc">to be confirmed</span> — as soon as practical. There’s a case for beginning the catalogue and data audit immediately, and letting the Galactic Racer launch pass before anything needs the team’s attention.</dd>
-      </dl>
-    </div>
-  </section>
+  <div class="sign">Neil</div>
 
-  <section>
-    <div class="eyebrow">Two things worth saying now</div>
-    <div class="closing">
-      <div>
-        <h3>Hire an analyst before you spend much more on advice</h3>
-        <p>A 25–30 person marketing group with no analyst is the cheapest gap in the business to close, and it’s the precondition for every recommendation I make being evidence-led rather than merely well-argued. I’d rather tell you that in week one than bill you for the workaround.</p>
-      </div>
-      <div>
-        <h3>Decide your rule on licensed work before Galactic Racer launches</h3>
-        <p>If it goes as well as you expect, the pull toward more top-tier licensed work will intensify — and that work buys reputation and cash flow while consuming exactly the capacity your owned IP needs to build equity value. That’s not an argument against taking it. It’s an argument for knowing, in advance and in writing, what you’d say yes to and what you wouldn’t. Far easier to decide now than in the middle of a good quarter.</p>
-      </div>
-    </div>
-  </section>
-
-  <div class="sig">KRITIQ · MAKING LIVE-SERVICE GAMES LAST</div>
+  <div class="foot">KRITIQ · MAKING LIVE-SERVICE GAMES LAST</div>
 
 </div>
