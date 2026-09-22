@@ -69,14 +69,32 @@ Not discussed; you think you can define it. Recommendation: **something that imp
 
 **Interim Portfolio Director**, reporting to Dan, is honest about the temporary nature, carries enough authority to convene people, and doesn't threaten either Dan or Alison — it's explicitly a gap-filling role, which is exactly what it is. Avoid anything with "Chief" or "Head of" in it; it reads as a land grab to the two people whose cooperation you need most.
 
-## 6. What I'd still find out before sending
+## 6. The Jan 2028 horizon is yours, and that has an implication
 
-- **Board cadence and whether Jan 2028 is board-set.** You flagged this as useful and it matters more than it looks: if Emona set that horizon, it's your actual deadline and everything back-plans from it. If it's a round number someone reached for, you have more freedom. One question to Dan.
-- **Whether Alison knows this conversation is happening.** Changes your week-one approach entirely.
+You set it, it landed, and fifteen months is a sound planning horizon — long enough to complete platform and territory moves and prove a playbook twice, short enough that people can hold it in their heads. Keep it.
 
-Neither needs to hold up the draft — both are one message to Dan.
+But it's worth being clear with yourself that **it's a planning horizon, not necessarily the value horizon.** You still don't know Emona's intended hold period, and that's the one input that decides whether the Jan 2028 map is *the sale preparation* or *a milestone on the way to a 2029–30 sale*. The two produce genuinely different plans — a shorter hold pushes everything toward provable, bankable moves and away from anything that lands late; a longer one makes a sequel or a new IP rational.
 
-## 7. On the month-six destination
+Don't ask in the proposal. Ask Ed, privately, once you're engaged and the catalogue audit gives you a natural reason to — "to sequence this properly I need to know what we're optimising the timeline against." That's a legitimate question from the person holding the pen, and an odd one from a candidate.
+
+A related trap the draft now guards against: **don't let anyone pin a revenue number to Jan 2028 before Phase 1.** With no analyst, no telemetry and possibly no per-title P&L, any figure agreed now is invented. Define the portfolio *state* first, attach financials once the audit gives you a base. Otherwise you spend month ten defending a number you made up in month one.
+
+## 7. Alison — you have a warm start, use it before signature
+
+You've met, and she knows you were coming in to talk about helping. That's better than cold: you can approach her without it being an ambush, and she already has a category to put you in.
+
+The strongest play is to talk to her **before the engagement is agreed**, not in week one. Someone consulted while the scope is still being written is a shaper; someone met in week one is being managed. Same conversation, completely different standing — and it costs you nothing but an hour.
+
+**Go through Dan, never around him.** Frame it as helping: *"Would it be useful if I spoke to Alison before we finalise scope, so this reflects what Commercial needs from it too?"* That makes Dan look inclusive, gives you the relationship with his blessing, and surfaces any Commercial-side objection while it's still cheap to design around rather than expensive to repair. The draft now offers this explicitly under "What I need from you."
+
+If Dan resists that suggestion, note it. It would tell you something useful about how the seam is likely to behave once you're inside.
+
+## 8. Still open
+
+- **Fees.** The only blank in the draft.
+- **Start date.**
+
+## 9. On the month-six destination
 
 Dan and Ed don't know what happens after six months; you sense a longer-term role until you make yourself redundant or they hire.
 
@@ -84,7 +102,7 @@ Dan and Ed don't know what happens after six months; you sense a longer-term rol
 
 It's counter-intuitive but it's the right commercial play as well as the honest one. Someone who arrives saying "my job is to make this unnecessary" is trusted faster, given access sooner, and — because trust and access are what determine whether six months actually works — is markedly more likely to be asked to stay. Trying to look indispensable from day one produces the opposite of both.
 
-## 8. Things deliberately left out of v1
+## 10. Things deliberately left out of v1
 
 - Any mention of an exit, Emona's timeline, or enterprise value. **You know it's the real game; the proposal shouldn't say so.** Dan is approving a portfolio and programme engagement. The equity story is what the work produces, not what it advertises — and putting it on paper invites a conversation above Dan's head.
 - Detailed per-title analysis. You have it, but it belongs in the first working session, not the proposal — leading with answers before you've been granted access looks like you've pre-judged their business.

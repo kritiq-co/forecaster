@@ -40,7 +40,19 @@ The destination: **what success looks like in January 2028**, and the route to i
 - **Value-creation plan per priority IP.** What each title could become, the ranked moves, and the evidence behind each. Chained Together console and Asia are the obvious first two.
 - **Tiering, derived not declared.** Once each title has a growth thesis, Tier A / B / C assigns itself — and, importantly, so does the resourcing each tier earns.
 - **Sequenced against real capacity**, including Secret Code's ramp and the Lab42 handover on Chained Together.
-- **The Jan 2028 picture** — what the portfolio looks like, what it earns, and what has been proved by then.
+- **The Jan 2028 picture** — roughly fifteen months out: far enough to complete real moves, close enough to plan against honestly.
+
+Worth being precise about what that horizon can and can't contain, because it sets expectations for everyone reading the map:
+
+| By Jan 2028 | Meaning |
+|---|---|
+| **Shipped** | Moves completed and earning — platform and territory expansion, live content |
+| **Proved** | A playbook applied more than once, with measured results behind it |
+| **In flight, de-risked** | Bigger bets committed and in production, with the evidence that justified them |
+
+A sequel, for instance, is a Jan 2028 *in-flight* item, not a shipped one. Saying that up front is more useful than discovering it in month twelve.
+
+One deliberate sequencing note: the map will define the **portfolio state** at Jan 2028 before it attaches financial targets to it. Until the catalogue audit shows what each title actually contributes, any revenue number would be invented rather than derived — and a target nobody can trace back to a base is a target nobody defends six months later. Financials attach in Phase 2, once Phase 1 has given us the base to build them on.
 
 Built *with* Marketing, Commercial and Publishing as co-authors, not delivered to them. A plan the business believes in is one it helped write; anything else is a document that gets praised once and ignored thereafter.
 
@@ -85,7 +97,7 @@ The portfolio map is the destination. The launch calendar is the thing that stop
 ## What I need from you
 
 - **Ed to introduce it, Dan to own it.** The plan spans Marketing and Commercial, so it needs to be visibly a company artefact rather than one function's initiative.
-- **Alison in from week one** as a named co-author. The franchise plan is as much Commercial's as Marketing's, and a plan Commercial didn't help write is a plan Commercial won't execute.
+- **Alison involved from the start**, as a named co-author rather than a reviewer. The franchise plan is as much Commercial's as Marketing's — a plan Commercial didn't help write is a plan Commercial won't execute. If it's useful, I'm happy to speak with her *before* this is finalised, so the scope reflects what Commercial needs from it too.
 - **Access:** dev partner contracts, whatever P&L exists, platform relationships, and the data feeds.
 - **A standing hour a week with Joe**, whose four live titles are where most of this becomes real.
 
