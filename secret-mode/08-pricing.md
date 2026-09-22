@@ -107,3 +107,39 @@ Same money. Completely different question in the reader's head.
 - **Expenses.** Travel to site, if they want you in person. Either "plus reasonable pre-agreed expenses" or fold it in and say it's inclusive. Don't leave it unsaid.
 - **Ask which budget line it comes from.** A genuinely useful question, and cheap to ask. If it's agency or consultancy budget, £14k/month is small and you may be under-asking. If it's headcount budget, the comparison to Dan becomes live and the monthly framing matters even more.
 - **Month-three review is your uplift mechanism.** If March needs four days a week — and you've said it will — that's the moment to reprice, from a position of having delivered. Better than padding the initial number and risking the yes.
+
+---
+
+## 7. Reviewing the £11k / 3 days proposal
+
+**The arithmetic.** 3 days × 26 weeks = 78 days. £11,000 × 6 = £66,000. **£846 per day.**
+
+That is the *floor* of the UK fractional band (£800–£1,800), and roughly 35% below the £1,290 that came out of the benchmarking above. The sources describe the £800–£1,000 tier as buying "a marketing operations consultant with strong executional capability, well-suited to businesses that already have a defined strategy and require structured programme management." Secret Mode has no defined strategy — writing it is the entire job.
+
+**You've added a day and cut the price.** Moving 2.5 → 3 days increases what you supply by 20% while the monthly figure falls 21%. Effective rate drops from ~£1,290 to ~£846.
+
+| | Days | Total | Per day | Annualised |
+|---|---|---|---|---|
+| Your proposal — 3 days | 78 | £66,000 | **£846** | £132,000 |
+| 3 days, volume-discounted | 78 | £84,000 | £1,077 | £168,000 |
+| 3 days, on-rate | 78 | £96,000 | £1,231 | £192,000 |
+| 2 days, your monthly number | 52 | £66,000 | £1,269 | £132,000 |
+
+**The last row is the interesting one.** £11,000 a month is a well-judged number — it's just priced at two days, not three. At two days it lands at £1,269/day, almost exactly the benchmark.
+
+### Four costs of pricing here
+
+1. **It anchors everything downstream.** This sets your rate for the month-three review, the extension, anything Emona-adjacent, and the next client who asks what you charge. Renewals go flat or up slightly; they almost never go up 50%.
+2. **You've already said March needs more than three days.** At £846 you absorb that overage cheaply. At £1,200 the same generosity is a real gesture you can point to.
+3. **Sixty per cent of your capacity.** Three days a week leaves two for every other client, business development and everything Kritiq needs to become. £132k annualised gross — before costs, before gaps between engagements, before pension — for most of your working week.
+4. **Consistency with Curse Forge.** If that engagement's implied day rate is higher, you'd be charging your larger, more demanding client *less per day* than your smaller one. Two UK games companies with overlapping networks.
+
+### Recommendation
+
+**Three days at £14,000 a month — £84,000 over the term, ~£1,077 a day.**
+
+It keeps the three days the work actually needs, it's a visible and explicable ~15% discount against benchmark in exchange for committed volume, and £14k is a clean number for a single approver.
+
+If £11k is the number you want on the page for approval reasons, take **two days at £11,000** instead. Same cheque, right rate, and it leaves room to go to three days at the March review when the need is self-evident rather than asserted.
+
+**If you price low deliberately** — for the reference, the relationship, or the door it opens to something longer — that's a legitimate strategy. But make it explicit to yourself, and make the month-three review a stated *repricing* point rather than just a scope check. An under-price with a correction mechanism is a strategy. An under-price without one is just a lower rate.
