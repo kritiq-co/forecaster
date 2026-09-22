@@ -143,3 +143,52 @@ It keeps the three days the work actually needs, it's a visible and explicable ~
 If £11k is the number you want on the page for approval reasons, take **two days at £11,000** instead. Same cheque, right rate, and it leaves room to go to three days at the March review when the need is self-evident rather than asserted.
 
 **If you price low deliberately** — for the reference, the relationship, or the door it opens to something longer — that's a legitimate strategy. But make it explicit to yourself, and make the month-three review a stated *repricing* point rather than just a scope check. An under-price with a correction mechanism is a strategy. An under-price without one is just a lower rate.
+
+---
+
+## 8. Which is more compelling from their side?
+
+|  | Days | Total | Per day |
+|---|---|---|---|
+| **A** — 2 days @ £11k | 52 | £66,000 | £1,269 |
+| **B** — 3 days @ £14k | 78 | £84,000 | £1,077 |
+
+**The marginal third day costs them £692 a day.** +26 days for +£18,000. Capacity up 50%, cost up 27%.
+
+£692 is *below the floor* of the UK fractional band. On pure value-for-money B wins outright, and the marginal figure is the number to put in front of Dan — it turns "£84k versus £66k" into "the extra day is the cheapest thing on the table."
+
+### The better argument is about what they're buying, not what it costs
+
+**Two days buys advice. Three days buys ownership.** You've told them you'd hold the pen — and pen-holding across a portfolio map, a continuous launch calendar and eleven launches in March is not credible at two days a week. You'd spend a disproportionate share of those two days re-establishing context and chasing people who are themselves swamped, and the first thing to fall would be the programme management track. Which is the thing hurting now.
+
+Three specifics make two days genuinely risky *for them*:
+
+- **No analyst, no telemetry.** Everything you need has to be extracted from people's heads. That's counterpart time, and it doesn't compress.
+- **Joe across four live titles, Dan and Ed both stretched.** Nobody has slack to brief you efficiently. Presence substitutes for their availability.
+- **March 2027 falls in months five and six.** Two tracks running at once, at the point of maximum load.
+
+And the failure mode is asymmetric: if you're under-resourced and the engagement underdelivers, it reads internally as *"the consultant didn't work out"*, not *"we bought too few days."* That's bad for Dan as well as you.
+
+### Grounding the number for Dan
+
+A 25–30 person marketing group costs somewhere around £135–190k a month fully loaded (assuming £65–75k average loaded cost per head — my arithmetic, not their figures).
+
+Against that, **£14k a month is roughly 8–10% of what the marketing function already costs**, and the whole £84k is about **half a month of that team's cost** — to make sure the other eleven and a half months are aimed at the right things. That's the comparison that makes it feel small, and it's a far better frame than anything that invites a comparison to a salary.
+
+The ROI line is even simpler: eleven launches are queued in March. If de-conflicting that month protects even one title with real upside from a compromised launch, the engagement has paid for itself several times over.
+
+### How to present it
+
+Lead with B as the recommendation. Don't offer a menu — menus invite people to choose the cheap option, and you'd be arguing against your own proposal.
+
+Name A only as a fallback, in one line, with the honest caveat attached:
+
+> *"Three days at £14k a month. If you'd rather start smaller, two days at £11k works — but I'd flag that the programme management side is hard to run properly on two, and that's the part hurting right now."*
+
+That's honest, it's useful, and it makes the case for three without holding a gun to it.
+
+### The one thing that would change my answer
+
+**Dan's approval limit.** If £84k crosses a threshold that £66k doesn't, B stops being the easier sell and becomes a trip to Ed and Emona — which delays an ASAP start by weeks and hands the decision to people who weren't in the room.
+
+Worth one question before you send: *"Is there a level at which this needs sign-off beyond you?"* Cheap to ask, and it's the only thing that would make A the better play.
