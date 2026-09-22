@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8">
+<title>Kritiq — Secret Mode Proposal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  @page { size: A4; margin: 17mm 19mm 15mm; }
+  *{ box-sizing:border-box; }
+  :root{
+    --ink:#15191F; --ink-2:#39424D; --muted:#6E7884;
+    --rule:#D5D9DF; --rule-soft:#E7EAEE;
+    --accent:#8A5A0F; --accent-soft:#F4E9D5;
+    --paper:#FFFFFF;
+  }
+  html,body{ margin:0; padding:0; background:var(--paper); }
+  body{
+    font-family:"IBM Plex Sans", Arial, sans-serif;
+    font-size:10.4pt; line-height:1.52; color:var(--ink);
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  p{ margin:0 0 9pt; }
+  b,strong{ font-weight:600; }
+
+  /* letterhead */
+  .lh{ display:flex; align-items:flex-end; justify-content:space-between;
+       border-bottom:2.5pt solid var(--accent); padding-bottom:7pt; margin-bottom:5pt; }
+  .wordmark{ font-family:Archivo, sans-serif; font-weight:700; font-size:23pt;
+             letter-spacing:-.035em; line-height:1; color:var(--ink); }
+  .wordmark .dot{ color:var(--accent); }
+  .lh-meta{ text-align:right; font-family:"IBM Plex Mono", monospace; font-size:7.3pt;
+            letter-spacing:.08em; text-transform:uppercase; color:var(--muted); line-height:1.7; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:7.3pt; letter-spacing:.14em;
+        text-transform:uppercase; color:var(--accent); margin-bottom:20pt; }
+
+  h2{ font-family:Archivo, sans-serif; font-weight:700; font-size:13.5pt;
+      letter-spacing:-.018em; margin:19pt 0 8pt; break-after:avoid; page-break-after:avoid; }
+  h2:first-of-type{ margin-top:4pt; }
+  h2 .wip{ font-family:"IBM Plex Sans",sans-serif; font-weight:400; font-size:9pt; color:var(--muted); }
+  h3{ font-family:Archivo, sans-serif; font-weight:600; font-size:11pt; color:var(--accent);
+      letter-spacing:-.008em; margin:15pt 0 7pt; break-after:avoid; page-break-after:avoid; }
+
+  ul{ margin:0 0 10pt; padding:0; list-style:none; }
+  li{ break-inside:avoid; page-break-inside:avoid; }
+  ul.pts li{ position:relative; padding:6.5pt 0 6.5pt 12pt; border-top:.5pt solid var(--rule-soft); }
+  ul.pts li:first-child{ border-top:none; padding-top:2pt; }
+  ul.pts li::before{ content:""; position:absolute; left:0; top:11.5pt;
+                     width:3.2pt; height:3.2pt; border-radius:50%; background:var(--accent); }
+  ul.pts li:first-child::before{ top:7pt; }
+
+  ul.good li{ position:relative; padding:5.5pt 0 5.5pt 15pt; border-top:.5pt solid var(--rule-soft); }
+  ul.good li:first-child{ border-top:none; padding-top:2pt; }
+  ul.good li::before{ content:"\2713"; position:absolute; left:0; top:5pt;
+                      color:var(--accent); font-size:9pt; }
+  ul.good li:first-child::before{ top:1.5pt; }
+
+  .pen{ background:var(--accent-soft); border-radius:3pt; padding:9pt 11pt;
+        margin:13pt 0 4pt; break-inside:avoid; page-break-inside:avoid; }
+  .pen p{ margin:0; }
+  .note{ font-size:9.2pt; color:var(--muted); margin-bottom:8pt; }
+
+  .outline{ border:.75pt solid var(--rule); border-radius:4pt; padding:12pt 14pt;
+            break-inside:avoid; page-break-inside:avoid; }
+  .outline li{ position:relative; padding:6.5pt 0 6.5pt 12pt; border-top:.5pt solid var(--rule-soft); }
+  .outline li:first-child{ border-top:none; padding-top:1pt; }
+  .outline li::before{ content:""; position:absolute; left:0; top:11.5pt;
+                       width:3.2pt; height:3.2pt; border-radius:50%; background:var(--accent); }
+  .outline li:first-child::before{ top:6pt; }
+  .outline li.alt{ color:var(--ink-2); font-size:9.6pt; }
+  .outline li.alt::before{ background:var(--muted); }
+  .fee{ font-family:"IBM Plex Mono", monospace; font-weight:500; }
+
+  .foot{ margin-top:22pt; padding-top:8pt; border-top:2.5pt solid var(--accent);
+         display:flex; justify-content:space-between;
+         font-family:"IBM Plex Mono", monospace; font-size:7.3pt;
+         letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+</style></head><body>
+
+<div class="lh">
+  <div class="wordmark">kritiq<span class="dot">.</span></div>
+  <div class="lh-meta">
+    Proposal for Secret Mode<br>
+    Prepared for Dan Robinson<br>
+    September 2026
+  </div>
+</div>
+<div class="tag">Making live-service games last</div>
+
+<h2>Where Secret Mode is</h2>
+<p>Your portfolio is growing quickly and so are your ambitions. Galactic Racer lands in a fortnight and more top-tier IP is signed and inbound. Secret Mode is joining the premier league, and Secret Code is standing up to support it. From a portfolio of small premium games you now have (at least) four live-service titles that deserve your time and attention. That’s a good problem, but it’s outrun the planning around it, and you’re all understandably conscious that something needs to change before mistakes get made from load rather than from judgement.</p>
+
+<h2>Areas that need immediate support</h2>
+
+<h3>Publishing Triage: building bandwidth into the system</h3>
+<ul class="pts">
+  <li><b>A path forward, the next 6 months.</b> How does Secret Mode handle the next six months with its existing commitments? “11 launches in March” isn’t feasible, so let’s understand the real dependencies and constraints, and rebuild a coherent, workable timeline that reduces the immediate pressure.</li>
+  <li><b>Live Ops operating model.</b> What’s the ideal setup for Joe and his teams to succeed, and how do we move towards it over the next six months? How do we build muscle memory into the team so we deliver good, consistent content efficiently?</li>
+  <li><b>Live Ops opportunities.</b> What are the team doing today and what are they missing? Are there greater opportunities to unlock that next 30%? A good example would be analytics, and standing up telemetry for key titles.</li>
+</ul>
+
+<h3>Portfolio Planning</h3>
+<p>As the portfolio grows, so does the complexity of keeping all the plates spinning. As things stand there’s no coherent view across the entire catalogue, and several titles you want to do more with (Chained Together, Backrooms, SCUM) have no franchise growth plans behind them.</p>
+<p>We discussed tiering the service we offer, but it can’t come until each title has a growth thesis. Until you have that, you can’t say which should be a tentpole and which is catalogue. The growth plans come first, and the tiering falls out of them.</p>
+<p>Our focus would be what success looks like in January 2028, and the route to it.</p>
+<ul class="pts">
+  <li><b>Growth plans per priority IP.</b> What each title could become, the ranked moves, and the commercial ROI behind each.</li>
+  <li><b>Portfolio map and prioritisation.</b> Once each title has a growth thesis, Tier A / B / C assigns itself, along with the resourcing each tier earns.</li>
+  <li><b>Growth plan kick-off.</b> Which of the high-priority growth moves need a plan around them, who owns each, and how best to get started.</li>
+  <li><b>Communicate the outlook.</b> An exciting and holistic portfolio plan that creates clarity for you, your teams and Emona.</li>
+</ul>
+
+<div class="pen"><p>In practice I’d hold the pen on all of this until it’s built and working, then hand it to whoever owns it permanently. The aim is to make the role unnecessary.</p></div>
+
+<h2>What good could look like at the end of Q1 2027 <span class="wip">(WIP)</span></h2>
+<p class="note">January 2028 is what the plan builds towards. This is what I’d want to be true by the time the engagement ends.</p>
+<ul class="good">
+  <li>The leadership team across Secret Mode all reference the same portfolio map, unprompted.</li>
+  <li>Q1 2027 has become a workable shape for Marketing, and the live-service team is taking significant shape.</li>
+  <li>Portfolio tiers are assigned to titles, and resourcing follows them.</li>
+  <li>Two or three growth plans are in execution, not just written.</li>
+  <li>An analyst is in post and insights are flowing.</li>
+</ul>
+
+<h2>Outline of engagement</h2>
+<div class="outline">
+  <ul>
+    <li>Three days a week, including a weekly sync.</li>
+    <li>Starting <b>12 October</b>. Happy to start the week before, though with Galactic Racer out on 6 October I assume you will all be slammed with that anyway.</li>
+    <li>Initial term six months, two months’ notice either side.</li>
+    <li><span class="fee">£84,000 plus VAT</span> over the 26-week period, invoiced monthly (<span class="fee">£14k</span>).</li>
+    <li>Reviewed at the end of January to agree scope and shape for the second half.</li>
+    <li class="alt">If you’d rather start smaller, two days at £11k works, but I’d flag that the programme management side is hard to run properly on two, so we’d need to look again at scope.</li>
+  </ul>
+</div>
+
+<div class="foot">
+  <span>kritiq</span>
+  <span>Making live-service games last</span>
+</div>
+
+</body></html>
