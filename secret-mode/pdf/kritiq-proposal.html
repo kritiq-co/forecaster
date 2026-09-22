@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8">
+<title>kritiq — Secret Mode Proposal</title>
+<style>__FONTS__</style>
+<style>
+  @page { size: A4; margin: 0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --green-dark:#0D3D28; --green:#1B4332; --green-mid:#2D6A4F;
+    --cream:#FFF8EE; --paper:#F2EBD9; --ink:#0F1A14; --gold:#FFD166;
+    --font-display:'Unbounded', sans-serif;
+    --font-editorial:'Playfair Display', serif;
+    --font-body:'DM Sans', sans-serif;
+    --font-mono:'Space Mono', monospace;
+  }
+  html{ background:var(--cream); }
+  body{ background:var(--cream); color:var(--ink); }
+  .wrap{ padding:0 18mm 14mm; }
+  .brk{ break-before:page; page-break-before:always; margin-top:15mm !important; }
+  body{
+    font-family:var(--font-body); font-size:9.8pt; line-height:1.58;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  p{ margin:0 0 7.5pt; }
+  strong,b{ font-weight:500; color:var(--ink); }
+
+  /* ---- letterhead: full-bleed deep green band ---- */
+  .band{
+    background:var(--green-dark); color:var(--cream);
+    width:100%; padding:12mm 18mm 10mm;
+    display:flex; align-items:flex-end; justify-content:space-between; gap:14pt;
+  }
+  .lockup{ display:flex; align-items:center; gap:5px; }
+  .lockup svg{ transform:translateY(2.5px); }
+  .wordmark{
+    font-family:var(--font-display); font-weight:700; font-size:33px;
+    letter-spacing:-0.03em; line-height:1; color:var(--cream);
+  }
+  .band-meta{
+    font-family:var(--font-mono); font-size:7.2pt; line-height:1.95;
+    color:rgba(255,248,238,0.45); text-align:right; white-space:nowrap;
+  }
+  .band-tag{
+    font-family:var(--font-mono); font-size:7.2pt; letter-spacing:0.34em;
+    text-transform:uppercase; color:var(--gold); margin-top:9pt;
+  }
+
+  /* ---- section labels ---- */
+  .label{
+    font-family:var(--font-mono); font-size:7.2pt; letter-spacing:0.45em;
+    text-transform:uppercase; color:var(--green-mid);
+    display:flex; align-items:center; gap:9pt;
+    margin:16pt 0 8pt; break-after:avoid; page-break-after:avoid;
+  }
+  .label::before{ content:''; width:16pt; height:1.2pt; background:var(--green-mid); flex-shrink:0; }
+  .label.first{ margin-top:13pt; }
+
+  h2{
+    font-family:var(--font-display); font-weight:700; font-size:14pt;
+    letter-spacing:-0.03em; line-height:1.25; color:var(--ink);
+    margin:0 0 9pt; break-after:avoid; page-break-after:avoid;
+  }
+  h2 .wip{ font-family:var(--font-mono); font-weight:400; font-size:7.5pt;
+           letter-spacing:.1em; color:var(--green-mid); }
+  h3{
+    font-family:var(--font-editorial); font-style:italic; font-weight:400;
+    font-size:12.5pt; color:var(--green); line-height:1.3;
+    margin:12pt 0 6pt; break-after:avoid; page-break-after:avoid;
+  }
+
+  ul{ list-style:none; }
+  li{ break-inside:avoid; page-break-inside:avoid; }
+  ul.pts{ margin:0 0 9pt; }
+  ul.pts li{ position:relative; padding:5pt 0 5pt 13pt;
+             border-top:0.5pt solid rgba(27,67,50,0.13); }
+  ul.pts li:first-child{ border-top:none; padding-top:2pt; }
+  ul.pts li::before{ content:''; position:absolute; left:0; top:10pt;
+                     width:3.4pt; height:3.4pt; border-radius:50%; background:var(--green-mid); }
+  ul.pts li:first-child::before{ top:6.5pt; }
+
+  ul.good li{ position:relative; padding:5pt 0 5pt 15pt;
+              border-top:0.5pt solid rgba(27,67,50,0.13); }
+  ul.good li:first-child{ border-top:none; padding-top:2pt; }
+  ul.good li::before{ content:''; position:absolute; left:1pt; top:9.5pt;
+                      width:5pt; height:5pt; background:var(--green-mid);
+                      transform:rotate(45deg); }
+  ul.good li:first-child::before{ top:6.5pt; }
+
+  /* ---- editorial pull panel ---- */
+  .pull{
+    background:var(--green-dark); color:var(--cream);
+    padding:11pt 13pt; margin:11pt 0 4pt;
+    break-inside:avoid; page-break-inside:avoid;
+    border-left:3pt solid var(--gold);
+  }
+  .pull p{ margin:0; font-family:var(--font-editorial); font-style:italic;
+           font-size:12pt; line-height:1.45; color:var(--cream); }
+
+  .note{ font-family:var(--font-body); font-size:9pt; color:rgba(15,26,20,0.55); margin-bottom:8pt; }
+
+  /* ---- outline panel ---- */
+  .outline{
+    background:var(--paper); border:0.75pt solid rgba(27,67,50,0.2);
+    padding:12pt 15pt; break-inside:avoid; page-break-inside:avoid;
+  }
+  .outline li{ position:relative; padding:6pt 0 6pt 13pt;
+               border-top:0.5pt solid rgba(27,67,50,0.13); }
+  .outline li:first-child{ border-top:none; padding-top:1pt; }
+  .outline li::before{ content:''; position:absolute; left:0; top:11.5pt;
+                       width:3.4pt; height:3.4pt; border-radius:50%; background:var(--green-mid); }
+  .outline li:first-child::before{ top:6.5pt; }
+  .outline li.alt{ color:rgba(15,26,20,0.62); font-size:9.4pt; }
+  .outline li.alt::before{ background:rgba(27,67,50,0.35); }
+  .fee{ font-family:var(--font-mono); font-size:9.6pt; color:var(--green); }
+
+  .foot{
+    margin-top:20pt; padding-top:7pt; border-top:1.2pt solid var(--green-mid);
+    display:flex; justify-content:space-between;
+    font-family:var(--font-mono); font-size:7pt; letter-spacing:0.3em;
+    text-transform:uppercase; color:rgba(15,26,20,0.4);
+  }
+</style></head><body>
+
+<div class="band">
+  <div>
+    <div class="lockup">
+      <svg width="40" height="49" viewBox="26 0 104 148" fill="none">
+        <defs><clipPath id="lc"><path d="M 58 6 C 60 16,78 30,88 50 C 98 70,100 94,90 110 C 82 122,72 128,65 130 C 58 128,48 122,40 110 C 30 94,30 72,38 52 C 44 34,56 16,58 6 Z"/></clipPath></defs>
+        <path d="M 58 6 C 60 16,78 30,88 50 C 98 70,100 94,90 110 C 82 122,72 128,65 130 C 58 128,48 122,40 110 C 30 94,30 72,38 52 C 44 34,56 16,58 6 Z" fill="#FFD166"/>
+        <g clip-path="url(#lc)"><polyline points="0,82 47,82 53,92 61,54 65,118 69,78 77,82 130,82" stroke="#0D3D28" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+      </svg>
+      <span class="wordmark">kritiq</span>
+    </div>
+    <div class="band-tag">Making live-service games last</div>
+  </div>
+  <div class="band-meta">
+    Proposal · Secret Mode<br>
+    For Dan Robinson<br>
+    September 2026
+  </div>
+</div>
+
+<div class="wrap">
+<div class="label first">01 · Where Secret Mode is</div>
+<p>Your portfolio is growing quickly and so are your ambitions. Galactic Racer lands in a fortnight and more top-tier IP is signed and inbound. Secret Mode is joining the premier league, and Secret Code is standing up to support it. From a portfolio of small premium games you now have (at least) four live-service titles that deserve your time and attention. That’s a good problem, but it’s outrun the planning around it, and you’re all understandably conscious that something needs to change before mistakes get made from load rather than from judgement.</p>
+
+<div class="label">02 · Areas that need immediate support</div>
+
+<h3>Publishing Triage: building bandwidth into the system</h3>
+<ul class="pts">
+  <li><b>A path forward, the next 6 months.</b> How does Secret Mode handle the next six months with its existing commitments? “11 launches in March” isn’t feasible, so let’s understand the real dependencies and constraints, and rebuild a coherent, workable timeline that reduces the immediate pressure.</li>
+  <li><b>Live Ops operating model.</b> What’s the ideal setup for Joe and his teams to succeed, and how do we move towards it over the next six months? How do we build muscle memory into the team so we deliver good, consistent content efficiently?</li>
+  <li><b>Live Ops opportunities.</b> What are the team doing today and what are they missing? Are there greater opportunities to unlock that next 30%? A good example would be analytics, and standing up telemetry for key titles.</li>
+</ul>
+
+<h3>Portfolio Planning</h3>
+<p>As the portfolio grows, so does the complexity of keeping all the plates spinning. As things stand there’s no coherent view across the entire catalogue, and several titles you want to do more with (Chained Together, Backrooms, SCUM) have no franchise growth plans behind them.</p>
+<p>We discussed tiering the service we offer, but it can’t come until each title has a growth thesis. Until you have that, you can’t say which should be a tentpole and which is catalogue. The growth plans come first, and the tiering falls out of them.</p>
+<p>Our focus would be what success looks like in January 2028, and the route to it.</p>
+<ul class="pts">
+  <li><b>Growth plans per priority IP.</b> What each title could become, the ranked moves, and the commercial ROI behind each.</li>
+  <li><b>Portfolio map and prioritisation.</b> Once each title has a growth thesis, Tier A / B / C assigns itself, along with the resourcing each tier earns.</li>
+  <li><b>Growth plan kick-off.</b> Which of the high-priority growth moves need a plan around them, who owns each, and how best to get started.</li>
+  <li><b>Communicate the outlook.</b> An exciting and holistic portfolio plan that creates clarity for you, your teams and Emona.</li>
+</ul>
+
+<div class="pull brk"><p>In practice I’d hold the pen on all of this until it’s built and working, then hand it to whoever owns it permanently. The aim is to make the role unnecessary.</p></div>
+
+<div class="label">03 · What good could look like at the end of Q1 2027</div>
+<h2>The picture by the time the engagement ends <span class="wip">(WIP)</span></h2>
+<p class="note">January 2028 is what the plan builds towards. This is what I’d want to be true by the end of the six months.</p>
+<ul class="good">
+  <li>The leadership team across Secret Mode all reference the same portfolio map, unprompted.</li>
+  <li>Q1 2027 has become a workable shape for Marketing, and the live-service team is taking significant shape.</li>
+  <li>Portfolio tiers are assigned to titles, and resourcing follows them.</li>
+  <li>Two or three growth plans are in execution, not just written.</li>
+  <li>An analyst is in post and insights are flowing.</li>
+</ul>
+
+<div class="label">04 · Outline of engagement</div>
+<div class="outline">
+  <ul>
+    <li>Three days a week, including a weekly sync.</li>
+    <li>Starting <b>12 October</b>. Happy to start the week before, though with Galactic Racer out on 6 October I assume you will all be slammed with that anyway.</li>
+    <li>Initial term six months, two months’ notice either side.</li>
+    <li><span class="fee">£84,000 plus VAT</span> over the 26-week period, invoiced monthly (<span class="fee">£14k</span>).</li>
+    <li>Reviewed at the end of January to agree scope and shape for the second half.</li>
+    <li class="alt">If you’d rather start smaller, two days at £11k works, but I’d flag that the programme management side is hard to run properly on two, so we’d need to look again at scope.</li>
+  </ul>
+</div>
+
+<div class="foot">
+  <span>kritiq</span>
+  <span>The whole machine, not the cogs</span>
+</div>
+
+</div>
+</body></html>
