@@ -1,0 +1,17 @@
+{
+  "name": "grandstand",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A turn-based sports-quiz RPG for people who remember Grandstand.",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8777",
+    "validate": "node tools/validate.mjs",
+    "balance": "node tools/balance.mjs",
+    "playtest": "node tools/playtest.mjs",
+    "check": "npm run validate && npm run balance"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
