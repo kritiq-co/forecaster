@@ -81,23 +81,63 @@ never a failure of the interface.
 
 ---
 
-## 3. Why an energy budget rather than lives
+## 3. A ladder, not a dungeon
 
-> *"Keep moving around map until you run out of energy."*
+The first build read "map" as a place and gave you a tile overworld to walk
+around. Wrong instinct. The reference points are the Street Fighter II select
+screen and a level-progression path: the map is a **route**, not a room, and
+the only navigation decision that matters is *which opponent next*.
+
+So: twelve rungs, seeded, harder as you climb, boss at the top. You move along
+it with two arrows. That's it.
+
+What the ladder buys that the dungeon didn't:
+
+- **Every screen is about a person.** The ladder screen shows you who is next,
+  their epithet, their sport, their stats and their taunt. The dungeon screen
+  showed you a car park.
+- **Difficulty is legible.** Rung 9 is obviously harder than rung 2. In a
+  free-roam map the player has no idea whether the bloke in the corner will
+  flatten them.
+- **The route is shareable.** A seed is now a specific run of twelve names, in
+  order, which is a thing two people can actually compare.
+
+**Stars** do the job the dungeon's side rooms used to. Three per rung — one for
+winning, one for answering well, one for finishing in decent nick — and you can
+climb back down to improve a rating. That's the whole reason to move backwards,
+and because a rematch costs energy like anything else, it's a real trade rather
+than free grinding.
+
+### Why an energy budget rather than lives
 
 Energy is a much better run-limiter than health for this audience, because it
-makes **walking a cost**. You can't grind the easy opponents to farm rep: every
-step across the car park is a step you don't get back. So the actual decision
-loop is "is that boxer over there worth the twelve steps and five exchanges, or
-do I push on to the arena?" That's a strategy layer sitting on top of a quiz,
-and it costs nothing to implement.
+prices **everything**, including the rematch. Walking out to face someone costs
+10 and every exchange costs 1 more, so a player who answers well finishes
+fights in fewer exchanges and gets further up the ladder on the same tank. Skill
+converts directly into distance, without a separate XP system.
 
 Health (`CONDITION`) still exists, but losing a fight doesn't end the day — it
-costs you 20 energy and drops you to 30%. Getting beaten by Tank Bruno should
-be a setback, not a game over. Forty-something dads play in twenty-minute
-windows; a run that ends abruptly at minute four is a run they don't restart.
+costs energy and drops you to 30%. Getting beaten by Tank Bruno should be a
+setback, not a game over. Forty-something dads play in twenty-minute windows; a
+run that ends abruptly at minute four is a run they don't restart.
 
-A day out is about 110 steps and 7–9 fights. Roughly twenty minutes.
+**Rung 11 is a physio, and that is the single most important number in the
+file.** Tuning showed a clear failure mode: a decent player reached the boss
+about 10 rungs in, on fumes, and lost to attrition rather than to the
+questions. Raising the energy budget didn't fix it — past about 130 the budget
+stopped being the binding constraint at all. Putting a physio immediately
+before the final did:
+
+```
+                          RUNGS/12  CHAMPION%      with rung-11 physio
+clueless   (33%, slow)         7.5         0%   ->    7.5     0%
+pub quiz   (55%, 7s)           9.0         0%   ->    9.3    15%
+decent dad (70%, 5s)          10.2         9%   ->   11.1    59%
+encyclopaedic (90%, 3s)       11.6        62%   ->   12.0    99%
+```
+
+Losing the last fight of the day should feel like losing the last fight of the
+day, not like running out of petrol.
 
 ---
 
@@ -118,26 +158,59 @@ Three modifiers, each doing a specific job:
 
 ---
 
-## 5. Pixel art without any art
+## 5. Getting the art out of 8-bit and into 16-bit
 
-Every sprite is generated: one humanoid template, a four-colour palette per
-fighter (skin / kit / trim / hair), a build (lean, normal, heavy) and one held
-item. Twenty distinct-looking opponents, no image files, and a new one costs
-about fifteen lines of data.
+The first build was too far down the pixel hole — NES, not arcade. The target
+is the Street Fighter II select screen and a modern cartoon level map: still
+pixels, but *painted* pixels. Four changes did nearly all of it, and none of
+them required an artist.
 
-This is a deliberate production choice, not just a shortcut. A solo project
-that needs twenty commissioned sprite sheets before it's playable is a project
-that never gets playtested. This one was balanced against a simulation before
-it had a single asset.
+**1. Every colour is a five-tone ramp, not a swatch.** `palette.js` turns one
+base colour into darkest/dark/base/light/lightest, with shadows drifting cool
+and highlights drifting warm. Flat fills read as 8-bit; a lit side and a shaded
+side read as 16-bit. This is the whole style in about forty lines.
 
-**The rendering rule that matters:** the internal canvas is a fixed 320×180 and
-everything is drawn at whole-pixel coordinates. Battle sprites are drawn at
-exactly 2×. The one place we knowingly break purity is the final scale-to-fit:
-snapping to whole-number scales would mean scale 1 on a 420px phone — a
-postage stamp in a black frame. We fit the space and let
-`image-rendering: pixelated` do the snapping. Some source pixels end up a
-device pixel wider than their neighbours. Nobody notices that; everybody
-notices a tiny picture.
+**2. Silhouettes are built from row profiles, not rectangles.** A head is a
+rounded crown tapering through the cheek to a jaw (`HEAD_PROFILE`); a torso is
+a V from shoulder to waist (`TORSO_TAPER`). The first version drew both as
+plain boxes, and boxes are exactly what makes generated art look generated.
+
+**3. Every sprite gets an automatic ink outline**, traced from its own
+silhouette after drawing. One function, applied to all twenty-eight characters,
+and it's the single biggest "reads as a proper sprite" upgrade per line of code
+in the project.
+
+**4. Sprites are cached.** Each variant renders once into an offscreen canvas.
+That's what makes 1 and 3 affordable — the outline pass needs a `getImageData`
+read-back, which you could not do every frame.
+
+Resolution went from 320×180 to 480×270 and battle sprites from 2× to 3×, so a
+marquee opponent now actually fills the screen.
+
+**Backgrounds break the pixel grid on purpose.** Skies are gradients, trees and
+path ribbons are curves, the ladder badges are bevelled and glossy. That mix —
+crisp characters on painted backdrops — is what an arcade cabinet looked like,
+and it's what the level-map reference is doing too. Keeping everything on the
+same chunky grid would be more *consistent* and less *right*.
+
+**The one rule we knowingly break:** the final scale-to-fit is not an integer.
+Snapping to whole-number scales would mean scale 1 on a 420px phone — a postage
+stamp in a black frame. We fit the space and let `image-rendering: pixelated`
+do the snapping. Some source pixels end up a device pixel wider than their
+neighbours. Nobody notices that; everybody notices a tiny picture.
+
+**Still generated, still deliberate.** One humanoid template, a four-colour
+palette, a build, a hair style, facial hair, a brow and one held item gives
+twenty-eight distinct-looking characters for about fifteen lines of data each.
+A solo project that needs twenty commissioned sprite sheets before it's
+playable is a project that never gets playtested; this one was balanced against
+a simulation before it had a single asset. Hand-authored sprites are the
+eventual upgrade, and the renderer is the thing you'd replace.
+
+`tools/artcheck.html` renders every portrait, pose and grid face on one page.
+Every art bug in this section — boxy heads, floating mullets, a blond beard
+that read as a bar across the mouth, hair clipped off the top of the select
+panel — was found by looking at that page, not by playing.
 
 ---
 
@@ -152,10 +225,12 @@ online quiz has to assume a second device. The honest routes are asynchronous
 clock. Both are real work and neither is a prototype. Hot-seat is what two
 people in a pub will actually use anyway.
 
-**Persistent progression.** Rep and a league table persist; nothing else does.
-Meta-progression (permanent upgrades between runs) is the obvious next hook,
-and deliberately absent until the core fight is proven fun. Adding upgrades to
-an unproven loop just hides whether the loop works.
+**Persistent progression.** Rep, stars and a league table persist; nothing else
+does. Meta-progression (permanent upgrades, unlockable fighters) is the obvious
+next hook and deliberately absent until the core fight is proven fun. Adding
+upgrades to an unproven loop just hides whether the loop works. Character
+select is the natural place to hang it when the time comes — locked portraits
+in the grid are the oldest trick in the arcade.
 
 **Audio beyond bleeps.** WebAudio square waves and noise. Music would be a
 licensing conversation, and this doesn't need one yet.
@@ -164,7 +239,7 @@ licensing conversation, and this doesn't need one yet.
 
 ## 7. The bit that will actually decide whether this works
 
-Not the combat maths. **The question bank.**
+Not the combat maths, and not the art. **The question bank.**
 
 98 questions is a demo. A player doing 7 fights a day at ~8 questions a fight
 sees ~56 in a session — more than half the bank in one sitting. The repeat is

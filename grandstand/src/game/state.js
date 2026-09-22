@@ -1,46 +1,58 @@
 /**
  * GRANDSTAND — run state and persistence.
  *
- * A run is "a day out". You get an energy budget, you walk the complex, you
- * take on who you fancy, and when the energy is gone the day ends and you get
- * a score. Rep persists between runs in the league table; nothing else does.
+ * A run is "a day out": you pick a fighter, then climb the ladder. Energy is
+ * the run limiter — every fight costs to enter and every exchange costs on top
+ * — so the decision is always "push on to the next rung, or go back down and
+ * beat one of them properly for the third star?"
+ *
+ * Rep persists between runs in the league table. Nothing else does.
  */
 
-import { GameMap, PICKUPS } from './map.js';
-import { PLAYER_KITS } from '../data/roster.js';
+import { Ladder, KIND, awardStars, RUNGS } from './ladder.js';
+import { findCharacter } from '../data/characters.js';
 import { hashSeed } from '../engine/rng.js';
 
-export const START_ENERGY = 110;
-export const START_HP = 120;
-export const STEP_COST = 1;
-export const BATTLE_TURN_COST = 1;
-export const WIN_ENERGY_REFUND = 8;
-export const START_NUTMEGS = 3;
+/**
+ * The energy budget is what makes a day out a day out. It is tuned so that a
+ * 12-rung ladder is just about clearable if you answer well and just about not
+ * if you don't: every exchange costs, so a player who nails their answers ends
+ * fights sooner and spends less. Loosen these and the ladder stops being a
+ * decision and becomes a corridor.
+ */
+export const START_ENERGY = 130;
+export const ENTER_COST = 10;         // walking out to face someone
+export const BATTLE_TURN_COST = 1;    // per exchange
+export const WIN_REFUND = 6;
+export const LOSS_PENALTY = 18;
+export const PHYSIO_HEAL = 0.55;      // fraction of max condition restored
+export const BONUS_REP = 250;
 
-const SAVE_KEY = 'grandstand.save.v1';
+const SAVE_KEY = 'grandstand.save.v2';
 
 export class Run {
-  constructor({ seed, sports = [], kitIndex = 0, name = 'YOU' } = {}) {
+  constructor({ seed, sports = [], characterId = 'ringer', name = 'YOU' } = {}) {
     this.seed = seed || (Math.random() * 0xffffffff) >>> 0;
     this.sports = sports;
     this.name = name;
-    this.kit = PLAYER_KITS[kitIndex % PLAYER_KITS.length];
-    this.map = new GameMap(this.seed, { sports });
+    this.character = findCharacter(characterId);
+    this.ladder = new Ladder(this.seed, { sports });
 
+    const c = this.character;
     this.player = {
-      name,
-      palette: this.kit.palette,
-      build: 'normal',
-      gear: 'ball',
-      hp: START_HP,
-      maxHp: START_HP,
-      power: 22,
-      nutmegs: START_NUTMEGS,
-      x: this.map.start.x,
-      y: this.map.start.y,
-      px: this.map.start.x * 16,
-      py: this.map.start.y * 16,
-      facing: 1,
+      name: c.name,
+      id: c.id,
+      palette: c.palette,
+      build: c.build,
+      gear: c.gear,
+      hair: c.hair,
+      facial: c.facial,
+      brow: c.brow,
+      hp: c.hp,
+      maxHp: c.hp,
+      power: c.power,
+      nutmegs: c.nutmegs,
+      perk: c.perk || {},
     };
 
     this.energy = START_ENERGY;
@@ -53,12 +65,16 @@ export class Run {
     this.bestCombo = 0;
     this.usedQuestions = new Set();
     this.defeatedIds = [];
+    this.at = 1;                 // which rung you are standing on
     this.over = false;
-    this.outcome = null;   // 'energy' | 'ko' | 'champion'
+    this.outcome = null;         // 'energy' | 'champion' | 'quit'
     this.startedAt = Date.now();
   }
 
   get accuracy() { return this.answered ? this.perfects / this.answered : 0; }
+  get rung() { return this.ladder.get(this.at); }
+
+  canAfford(cost = ENTER_COST) { return this.energy >= cost; }
 
   spendEnergy(n) {
     this.energy = Math.max(0, this.energy - n);
@@ -67,58 +83,63 @@ export class Run {
   }
 
   end(outcome) {
-    // Beating the boss always trumps an earlier ending: running the energy
-    // down on the final exchange and *then* winning is still a championship.
+    // Beating the boss always trumps an earlier ending: running the energy down
+    // on the final exchange and then winning is still a championship.
     if (this.over && outcome !== 'champion') return;
     this.over = true;
     this.outcome = outcome;
     this.finishedAt = Date.now();
   }
 
-  /** Try to walk one tile. Returns what happened. */
-  step(dx, dy) {
-    if (this.over) return { kind: 'over' };
-    const nx = this.player.x + dx, ny = this.player.y + dy;
-    if (dx !== 0) this.player.facing = dx > 0 ? 1 : -1;
-    if (!this.map.walkable(nx, ny)) return { kind: 'blocked' };
-
-    this.player.x = nx; this.player.y = ny;
-    this.spendEnergy(STEP_COST);
-
-    const pick = this.map.pickupAt(nx, ny);
-    if (pick) {
-      pick.taken = true;
-      const def = PICKUPS[pick.kind];
-      this.player.hp = Math.min(this.player.maxHp, this.player.hp + (def.hp || 0));
-      this.energy = Math.min(this.maxEnergy, this.energy + (def.energy || 0));
-      this.rep += def.rep || 0;
-      return { kind: 'pickup', pickup: def };
-    }
-
-    const enc = this.map.encounterAt(nx, ny);
-    if (enc) return { kind: 'encounter', encounter: enc };
-
-    if (this.over) return { kind: 'exhausted' };
-    return { kind: 'moved' };
+  /** Move to a rung you have unlocked. Costs nothing — the fight is the cost. */
+  moveTo(n) {
+    if (!this.ladder.available(n)) return false;
+    this.at = Math.max(1, Math.min(RUNGS, n));
+    return true;
   }
 
-  finishBattle(enc, battle, won) {
+  /** Physio and bonus rungs resolve on arrival rather than in a fight. */
+  takeRest() {
+    const r = this.rung;
+    if (r.kind === KIND.PHYSIO) {
+      const before = this.player.hp;
+      this.player.hp = Math.min(this.player.maxHp,
+        this.player.hp + Math.round(this.player.maxHp * PHYSIO_HEAL));
+      r.cleared = true; r.stars = Math.max(r.stars, 3);
+      return { kind: KIND.PHYSIO, healed: this.player.hp - before };
+    }
+    if (r.kind === KIND.BONUS) {
+      const gain = Math.round(BONUS_REP * (this.player.perk.repMult || 1));
+      this.rep += gain;
+      this.player.nutmegs++;
+      r.cleared = true; r.stars = Math.max(r.stars, 3);
+      return { kind: KIND.BONUS, rep: gain, nutmegs: 1 };
+    }
+    return null;
+  }
+
+  finishBattle(rung, battle, won) {
     this.answered += battle.answered;
     this.perfects += battle.perfects;
     this.bestCombo = Math.max(this.bestCombo, battle.bestCombo);
     this.rep += battle.repEarned;
+    rung.attempts++;
+
     if (won) {
-      enc.defeated = true;
-      this.defeatedIds.push(enc.fighter.id);
-      this.wins++;
+      const wasCleared = rung.cleared;
+      rung.cleared = true;
+      rung.stars = Math.max(rung.stars, awardStars(battle, this.player));
+      if (!wasCleared) {
+        this.wins++;
+        if (rung.fighter) this.defeatedIds.push(rung.fighter.id);
+      }
       this.rep += battle.victoryRep();
-      this.energy = Math.min(this.maxEnergy, this.energy + WIN_ENERGY_REFUND);
-      if (enc.isBoss) this.end('champion');
+      this.energy = Math.min(this.maxEnergy, this.energy + WIN_REFUND);
+      if (rung.kind === KIND.BOSS) this.end('champion');
     } else {
       this.losses++;
       this.player.hp = Math.max(1, Math.round(this.player.maxHp * 0.3));
-      this.energy = Math.max(0, this.energy - 20);
-      if (this.energy <= 0) this.end('ko');
+      this.spendEnergy(LOSS_PENALTY);
     }
   }
 
@@ -127,9 +148,12 @@ export class Run {
       this.rep +
       Math.round(this.accuracy * 500) +
       this.bestCombo * 60 +
+      this.ladder.totalStars() * 50 +
       (this.outcome === 'champion' ? 1000 : 0);
     return {
       name: this.name,
+      character: this.character.id,
+      characterName: this.character.name,
       seed: this.seed,
       rep: bonus,
       wins: this.wins,
@@ -137,6 +161,9 @@ export class Run {
       accuracy: this.accuracy,
       bestCombo: this.bestCombo,
       answered: this.answered,
+      stars: this.ladder.totalStars(),
+      maxStars: this.ladder.maxStars(),
+      rungs: this.ladder.clearedCount(),
       outcome: this.outcome,
       sports: this.sports.slice(),
       date: Date.now(),
@@ -149,29 +176,19 @@ export class Run {
 function readSave() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
+    return raw ? JSON.parse(raw) : null;
   } catch { return null; }
 }
-
 function writeSave(data) {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* private mode */ }
 }
 
 const blankSave = () => ({
-  league: [],
-  beaten: [],
-  totalRuns: 0,
-  bestRep: 0,
-  muted: false,
-  lastSports: [],
-  lastKit: 0,
-  lastName: 'YOU',
+  league: [], beaten: [], totalRuns: 0, bestRep: 0, muted: false,
+  lastSports: [], lastCharacter: 'ringer', lastName: 'YOU',
 });
 
-export function loadSave() {
-  return { ...blankSave(), ...(readSave() || {}) };
-}
+export function loadSave() { return { ...blankSave(), ...(readSave() || {}) }; }
 
 export function recordRun(card) {
   const save = loadSave();
@@ -191,19 +208,18 @@ export function recordBeaten(ids) {
   return save;
 }
 
-export function savePrefs(prefs) {
-  writeSave({ ...loadSave(), ...prefs });
-}
+export function savePrefs(prefs) { writeSave({ ...loadSave(), ...prefs }); }
+export function wipeSave() { try { localStorage.removeItem(SAVE_KEY); } catch { /* ignore */ } }
 
 export function makeSeedFrom(text) {
-  return text && text.trim() ? hashSeed(text.trim().toUpperCase()) : (Math.random() * 0xffffffff) >>> 0;
+  return text && text.trim()
+    ? hashSeed(text.trim().toUpperCase())
+    : (Math.random() * 0xffffffff) >>> 0;
 }
 
-/** Turn a numeric seed back into something a dad can read out in the pub. */
+/** Turn a numeric seed into something you can read out in the pub. */
 const WORDS = ['SHEARER', 'BRUNO', 'GAZZA', 'DALEY', 'TORVILL', 'HENDRY', 'BOTHAM',
   'FALDO', 'MANSELL', 'GUNNELL', 'CHRISTIE', 'TAYLOR', 'BORG', 'LINEKER', 'REDGRAVE', 'DAVIS'];
 export function seedName(seed) {
-  const a = WORDS[seed % WORDS.length];
-  const b = (seed >> 8) % 90 + 10;
-  return `${a}-${b}`;
+  return `${WORDS[seed % WORDS.length]}-${(seed >> 8) % 90 + 10}`;
 }

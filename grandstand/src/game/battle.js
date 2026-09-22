@@ -44,6 +44,19 @@ export const CRIT_BONUS = 0.5;        // +50% for the perfect pick
 export const COMBO_STEPS = [1, 1, 1.25, 1.5, 2];  // by combo length
 export const BLOCK_FLOOR = 0.25;      // best possible block takes 25% through
 
+/**
+ * Character perks, read off `player.perk`. Kept here rather than in the
+ * character data so there is one place to look when a fight does something
+ * surprising.
+ *
+ *   speedMult   multiplies the clock bonus
+ *   blockFloor  replaces BLOCK_FLOOR — lower is a better blocker
+ *   repMult     multiplies all rep earned
+ *   comboBoost  starts the combo ladder this many rungs up
+ *   glassJaw    multiplies damage taken
+ */
+export const PERK_KEYS = ['speedMult', 'blockFloor', 'repMult', 'comboBoost', 'glassJaw'];
+
 export class Battle {
   /**
    * @param {object} player  { name, hp, maxHp, power, palette, nutmegs }
@@ -133,8 +146,14 @@ export class Battle {
     return phase === PHASE.BLOCK ? value === this.maxValue() : value === this.minValue();
   }
 
+  perk(key, fallback) {
+    const v = this.player.perk && this.player.perk[key];
+    return v == null ? fallback : v;
+  }
+
   comboMult() {
-    return COMBO_STEPS[Math.min(this.combo, COMBO_STEPS.length - 1)];
+    const boost = this.perk('comboBoost', 0);
+    return COMBO_STEPS[Math.min(this.combo + (this.combo > 0 ? boost : 0), COMBO_STEPS.length - 1)];
   }
 
   // ── turn flow ─────────────────────────────────────────────────────────
@@ -182,7 +201,8 @@ export class Battle {
     const worst = timedOut || this.isWorst(opt.value, phase);
 
     // speed bonus decays linearly over the clock
-    const speed = timedOut ? 0 : SPEED_BONUS_MAX * (1 - Math.min(1, elapsed / ANSWER_MS));
+    const speed = timedOut ? 0
+      : SPEED_BONUS_MAX * this.perk('speedMult', 1) * (1 - Math.min(1, elapsed / ANSWER_MS));
 
     this.answered++;
     if (perfect) {
@@ -216,8 +236,9 @@ export class Battle {
       else if (timedOut) result.card = this.book();
     } else {
       // BLOCK: ratio 1.0 means best pick, which should take the LEAST damage.
-      const through = BLOCK_FLOOR + (1 - BLOCK_FLOOR) * (1 - (ratio - 0.25) / 0.75);
-      let taken = Math.round(this.pendingIncoming * through);
+      const floor = this.perk('blockFloor', BLOCK_FLOOR);
+      const through = floor + (1 - floor) * (1 - (ratio - 0.25) / 0.75);
+      let taken = Math.round(this.pendingIncoming * through * this.perk('glassJaw', 1));
       taken = Math.max(1, taken);
       this.player.hp = Math.max(0, this.player.hp - taken);
       result.taken = taken;
@@ -225,6 +246,7 @@ export class Battle {
       result.rep = perfect ? 18 : Math.round(8 * ratio);
     }
 
+    result.rep = Math.round(result.rep * this.perk('repMult', 1));
     this.repEarned += result.rep;
     this.lastResult = result;
     this.phase = PHASE.RESOLVE;
@@ -270,7 +292,7 @@ export class Battle {
   skipCheck() {
     if (!this.skipNext) return false;
     this.skipNext = false;
-    const incoming = this.foeAttack();
+    const incoming = Math.round(this.foeAttack() * this.perk('glassJaw', 1));
     this.player.hp = Math.max(0, this.player.hp - incoming);
     this.lastResult = {
       phase: PHASE.BLOCK, sentOff: true, taken: incoming, damage: 0,
@@ -302,7 +324,8 @@ export class Battle {
     const base = 100 * this.level * (this.foe.boss ? 3 : 1);
     const accuracy = this.answered ? this.perfects / this.answered : 0;
     const cleanSheet = this.player.hp === this.player.maxHp ? 150 : 0;
-    return Math.round(base + accuracy * 200 + this.bestCombo * 40 + cleanSheet);
+    return Math.round((base + accuracy * 200 + this.bestCombo * 40 + cleanSheet)
+      * this.perk('repMult', 1));
   }
 
   summary() {

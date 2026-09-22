@@ -11,6 +11,9 @@
 
 import { QUESTIONS, SPORTS, countBySport } from '../src/data/questions.js';
 import { ROSTER, bosses, byTier } from '../src/data/roster.js';
+import { CHARACTERS } from '../src/data/characters.js';
+import { PERK_KEYS } from '../src/game/battle.js';
+import { Ladder, RUNGS } from '../src/game/ladder.js';
 
 let errors = 0;
 let warnings = 0;
@@ -87,6 +90,43 @@ for (const tier of [1, 2, 3]) {
 }
 console.log(`  bosses: ${bosses().length}`);
 if (bosses().length < 1) fail('no bosses');
+
+console.log(`\nPLAYABLE CHARACTERS (${CHARACTERS.length})`);
+const cids = new Set();
+for (const c of CHARACTERS) {
+  const id = `"${c.name}"`;
+  if (cids.has(c.id)) fail(`${id}: duplicate id "${c.id}"`);
+  cids.add(c.id);
+  for (const k of ['name', 'epithet', 'blurb', 'palette', 'build', 'gear']) {
+    if (c[k] == null) fail(`${id}: missing ${k}`);
+  }
+  for (const [k, v] of Object.entries(c.palette || {})) {
+    if (!/^#[0-9a-f]{6}$/i.test(v)) fail(`${id}: palette.${k} "${v}" is not a 6-digit hex colour`);
+  }
+  if (c.hp <= 0 || c.power <= 0 || c.nutmegs < 0) fail(`${id}: nonsense stats`);
+  // A perk the engine does not read is a promise to the player we never keep.
+  for (const k of Object.keys(c.perk || {})) {
+    if (!PERK_KEYS.includes(k)) fail(`${id}: perk "${k}" is not read by battle.js`);
+  }
+}
+console.log(`  ${CHARACTERS.length} fighters, ${CHARACTERS.filter((c) => Object.keys(c.perk || {}).length).length} with perks`);
+
+console.log(`\nLADDER`);
+// Generating a ladder must never leave a rung without an opponent, and must
+// never put the same person on two rungs in a row.
+for (const seed of [1, 7, 42, 999, 123456, 8675309]) {
+  const l = new Ladder(seed);
+  if (l.rungs.length !== RUNGS) fail(`seed ${seed}: ${l.rungs.length} rungs, expected ${RUNGS}`);
+  let prev = null;
+  for (const r of l.rungs) {
+    if ((r.kind === 'fight' || r.kind === 'boss') && !r.fighter) fail(`seed ${seed}: rung ${r.n} has no opponent`);
+    if (r.fighter && prev && r.fighter.id === prev) fail(`seed ${seed}: ${r.fighter.name} on rungs ${r.n - 1} and ${r.n}`);
+    prev = r.fighter ? r.fighter.id : null;
+  }
+  if (!l.rungs.some((r) => r.kind === 'boss')) fail(`seed ${seed}: no boss`);
+  if (l.available(2)) fail(`seed ${seed}: rung 2 unlocked before rung 1 was cleared`);
+}
+console.log(`  ${RUNGS} rungs, 6 seeds checked`);
 
 console.log(`\n${errors ? '✗' : '✓'} ${errors} error${errors === 1 ? '' : 's'}, ${warnings} warning${warnings === 1 ? '' : 's'}\n`);
 process.exit(errors ? 1 : 0);

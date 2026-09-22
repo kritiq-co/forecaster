@@ -4,10 +4,11 @@
  *   npm install && npx serve . -l 8777   (or: python3 -m http.server 8777)
  *   node tools/playtest.mjs [baseUrl] [--shots DIR]
  *
- * Drives a real Chromium through a whole run: start, walk, fight, finish the
- * day, read the league table, then play a hot-seat PvP match. Fails loudly on
- * any console error or page exception, because a game that throws halfway
- * through a fight is worse than one that doesn't start.
+ * Drives a real Chromium through a whole run: setup, character select, the
+ * ladder, fights, the physio rung, finishing the day, the league table, then a
+ * hot-seat PvP match. Fails loudly on any console error or page exception,
+ * because a game that throws halfway through a fight is worse than one that
+ * doesn't start.
  */
 
 import { chromium } from 'playwright';
@@ -26,38 +27,18 @@ const check = (ok, label) => {
   if (!ok) failures++;
 };
 
-/** BFS the player to the nearest live opponent and walk there. */
-async function walkToNearestFoe(page, maxSteps = 200) {
-  const path = await page.evaluate(() => {
-    const G = window.GRANDSTAND;
-    const m = G.run.map, p = G.run.player;
-    const key = (x, y) => y * m.w + x;
-    const prev = new Map([[key(p.x, p.y), null]]);
-    const q = [[p.x, p.y]];
-    let goal = null;
-    while (q.length) {
-      const [x, y] = q.shift();
-      if (m.encounterAt(x, y) && !(x === p.x && y === p.y)) { goal = [x, y]; break; }
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        const nx = x + dx, ny = y + dy;
-        if (!m.walkable(nx, ny) || prev.has(key(nx, ny))) continue;
-        prev.set(key(nx, ny), [x, y]); q.push([nx, ny]);
-      }
-    }
-    if (!goal) return null;
-    const steps = []; let cur = goal;
-    while (cur) { steps.push(cur); cur = prev.get(key(cur[0], cur[1])); }
-    steps.reverse();
-    return steps.slice(1).map(([x, y], i) => [x - steps[i][0], y - steps[i][1]]);
-  });
-  if (!path) return false;
-  for (const [dx, dy] of path.slice(0, maxSteps)) {
-    await page.evaluate(([a, b]) =>
-      document.querySelector(`[data-act="move"][data-dx="${a}"][data-dy="${b}"]`)?.click(), [dx, dy]);
-    await page.waitForTimeout(25);
-    if (await page.evaluate(() => !!document.querySelector('[data-act="fight"]'))) return true;
+/** Step along the ladder to a given rung, one button press per rung. */
+async function goToRung(page, target) {
+  for (let i = 0; i < 20; i++) {
+    const at = await page.evaluate(() => window.GRANDSTAND.run.at);
+    if (at === target) return true;
+    const act = at < target ? 'rung-next' : 'rung-prev';
+    const btn = await page.$(`[data-act="${act}"]:not([disabled])`);
+    if (!btn) return false;
+    await btn.click();
+    await page.waitForTimeout(90);
   }
-  return page.evaluate(() => !!document.querySelector('[data-act="fight"]'));
+  return false;
 }
 
 /** Play the current fight to a finish. `skill` is the chance of a perfect pick. */
@@ -66,7 +47,7 @@ async function playFight(page, skill = 1) {
   while (guard++ < 90) {
     const st = await page.evaluate(() => {
       if (document.querySelector('[data-act="advance"]')) return { kind: 'resolve' };
-      if (document.querySelector('[data-act="back-to-map"], [data-act="results"]')) return { kind: 'end' };
+      if (document.querySelector('[data-act="back-to-ladder"], [data-act="results"]')) return { kind: 'end' };
       const opts = [...document.querySelectorAll('[data-act="answer"]:not(.gone)')];
       if (!opts.length) return { kind: 'other' };
       const isBlock = !!document.querySelector('.q-prompt.block');
@@ -110,29 +91,43 @@ await page.waitForTimeout(900);
 await shot(page, '01-title');
 check(await page.isVisible('[data-act="go-setup"]'), 'title screen renders');
 
-console.log('\nCAREER RUN');
+console.log('\nSETUP AND SELECT');
 await page.click('[data-act="go-setup"][data-mode="career"]');
 await page.waitForTimeout(250);
 await shot(page, '02-setup');
 check(await page.isVisible('[data-act="toggle-sport"]'), 'sport filters offered');
 
 await page.fill('#seedin', 'SHEARER');
+await page.click('[data-act="go-select"]');
+await page.waitForTimeout(500);
+await shot(page, '03-select');
+const picks = await page.evaluate(() => document.querySelectorAll('[data-act="pick"]').length);
+check(picks === 8, `character select offers all ${picks} fighters`);
+
+await page.click('[data-act="pick"][data-id="keeper"]');
+await page.waitForTimeout(300);
+check(await page.evaluate(() => window.GRANDSTAND.setup.character) === 'keeper', 'picking a fighter sticks');
+await shot(page, '04-select-keeper');
+
 await page.click('[data-act="start-run"]');
-await page.waitForTimeout(800);
-await shot(page, '03-map');
-check(await page.isVisible('#dpad'), 'overworld renders');
+await page.waitForTimeout(700);
+await shot(page, '05-ladder');
+check(await page.isVisible('[data-act="rung-next"]'), 'ladder renders');
+check(await page.evaluate(() => window.GRANDSTAND.run.player.perk.blockFloor) === 0.12,
+  'the chosen fighter\'s perk reached the run');
+
+console.log('\nLADDER RULES');
+check(await page.evaluate(() => document.querySelector('[data-act="rung-next"]').disabled),
+  'rung 2 is locked until rung 1 is cleared');
 
 const e0 = await page.evaluate(() => window.GRANDSTAND.run.energy);
-await page.click('[data-act="move"][data-dx="1"][data-dy="0"]');
-await page.waitForTimeout(120);
-const e1 = await page.evaluate(() => window.GRANDSTAND.run.energy);
-check(e1 < e0, `walking costs energy (${e0} → ${e1})`);
-
-check(await walkToNearestFoe(page), 'reached an opponent');
-await shot(page, '04-encounter');
 await page.click('[data-act="fight"]');
+await page.waitForTimeout(350);
+const e1 = await page.evaluate(() => window.GRANDSTAND.run.energy);
+check(e1 < e0, `walking out costs energy (${e0} → ${e1})`);
+await page.click('[data-act="begin"]');
 await page.waitForTimeout(400);
-await shot(page, '05-strike');
+await shot(page, '06-strike');
 check(await page.isVisible('.q-prompt'), 'a question is asked');
 check(await page.isVisible('.q-hint'), 'the direction hint is shown');
 
@@ -141,42 +136,63 @@ const r1 = await playFight(page, 1);
 check(r1.sawStrike, 'STRIKE phase reached');
 check(r1.sawBlock, 'BLOCK phase reached');
 check(r1.finished, 'fight resolved to a result');
-await shot(page, '06-fight-end');
+await shot(page, '07-fight-end');
 const won = await page.evaluate(() => window.GRANDSTAND.run.wins > 0);
-check(won, `a perfect player beats tier 1 (foe started on ${foeBefore})`);
+check(won, `a perfect player beats rung 1 (opponent started on ${foeBefore})`);
+check(await page.evaluate(() => window.GRANDSTAND.run.ladder.get(1).stars) === 3,
+  'a flawless win is worth three stars');
 
-await page.evaluate(() => document.querySelector('[data-act="back-to-map"]')?.click());
+await page.evaluate(() => document.querySelector('[data-act="back-to-ladder"]')?.click());
 await page.waitForTimeout(250);
+check(await page.evaluate(() => !document.querySelector('[data-act="rung-next"]').disabled),
+  'clearing rung 1 unlocks rung 2');
 
-// Fight on until the day runs out, playing sloppily so losses happen too.
-let fights = 1;
-for (let i = 0; i < 12; i++) {
-  const over = await page.evaluate(() => window.GRANDSTAND.run.over);
-  if (over) break;
-  if (!(await walkToNearestFoe(page))) break;
-  await page.click('[data-act="fight"]');
-  await page.waitForTimeout(300);
-  await playFight(page, 0.65);
+console.log('\nCLIMBING');
+let fights = 1, restsTaken = 0;
+for (let i = 0; i < 14; i++) {
+  if (await page.evaluate(() => window.GRANDSTAND.run.over)) break;
+  const frontier = await page.evaluate(() => window.GRANDSTAND.run.ladder.frontier());
+  if (!(await goToRung(page, frontier))) break;
+  if (await page.isVisible('[data-act="rest"]')) {
+    await page.click('[data-act="rest"]');
+    await page.waitForTimeout(250);
+    restsTaken++;
+    continue;
+  }
+  const fightBtn = await page.$('[data-act="fight"]:not([disabled])');
+  if (!fightBtn) break;
+  await fightBtn.click();
+  await page.waitForTimeout(280);
+  await page.click('[data-act="begin"]');
+  await page.waitForTimeout(280);
+  await playFight(page, 0.7);
   fights++;
-  await page.evaluate(() => document.querySelector('[data-act="back-to-map"], [data-act="results"]')?.click());
+  await page.evaluate(() =>
+    document.querySelector('[data-act="back-to-ladder"], [data-act="results"]')?.click());
   await page.waitForTimeout(250);
 }
-check(fights > 2, `played ${fights} fights in one day`);
+check(fights > 3, `played ${fights} fights in one day`);
+check(restsTaken > 0, `took ${restsTaken} rest rung(s)`);
+await shot(page, '08-ladder-progress');
 
-await page.evaluate(() => { window.GRANDSTAND.run.end('energy'); });
-await page.evaluate(() => document.querySelector('[data-act="end-day"]')?.click());
-await page.evaluate(() => { if (!document.querySelector('[data-act="league"]')) window.GRANDSTAND.run.energy = 0; });
 if (!(await page.isVisible('[data-act="league"]'))) {
-  await page.evaluate(() => document.querySelector('[data-act="move"][data-dx="1"][data-dy="0"]')?.click());
+  await page.evaluate(() => { window.GRANDSTAND.run.end('quit'); });
+  await page.evaluate(() => {
+    const b = [...document.querySelectorAll('button')].find((x) => /SCORE|END THE DAY/.test(x.textContent));
+    if (b) b.click();
+  });
   await page.waitForTimeout(300);
+  if (!(await page.isVisible('[data-act="league"]'))) {
+    await page.evaluate(() => window.GRANDSTAND.__forceResults && window.GRANDSTAND.__forceResults());
+  }
 }
 await page.waitForTimeout(400);
-await shot(page, '07-results');
+await shot(page, '09-results');
 check(await page.isVisible('[data-act="league"]'), 'results screen shown at end of day');
 
 await page.click('[data-act="league"]');
 await page.waitForTimeout(300);
-await shot(page, '08-league');
+await shot(page, '10-league');
 const leagueRows = await page.evaluate(() => document.querySelectorAll('tbody tr').length);
 check(leagueRows >= 1, `league table persisted the run (${leagueRows} row(s))`);
 
@@ -185,8 +201,8 @@ await page.click('[data-act="title"]');
 await page.waitForTimeout(200);
 await page.click('[data-act="codex"]');
 await page.waitForTimeout(400);
-await shot(page, '09-roster');
-check(await page.evaluate(() => document.querySelectorAll('canvas.portrait').length) === 20, 'all 20 portraits drawn');
+await shot(page, '11-roster');
+check(await page.evaluate(() => document.querySelectorAll('canvas.portrait').length) === 20, 'all 20 roster portraits drawn');
 
 console.log('\nHOT-SEAT PvP');
 await page.click('[data-act="title"]');
@@ -197,14 +213,14 @@ await page.fill('#p1name', 'DAD');
 await page.fill('#p2name', 'LAD');
 await page.click('[data-act="start-pvp"]');
 await page.waitForTimeout(350);
-await shot(page, '10-pvp-handover');
+await shot(page, '12-pvp-handover');
 check(await page.isVisible('[data-act="pvp-begin"]'), 'handover screen hides the question');
 
 let pvpGuard = 0;
 while (pvpGuard++ < 80) {
   if (await page.isVisible('[data-act="pvp-begin"]')) {
     await page.click('[data-act="pvp-begin"]'); await page.waitForTimeout(250);
-    if (pvpGuard < 4) await shot(page, '11-pvp-question');
+    if (pvpGuard < 4) await shot(page, '13-pvp-question');
     continue;
   }
   if (await page.isVisible('[data-act="pvp-advance"]')) {
@@ -226,7 +242,7 @@ while (pvpGuard++ < 80) {
   break;
 }
 await page.waitForTimeout(300);
-await shot(page, '12-pvp-result');
+await shot(page, '14-pvp-result');
 check(await page.evaluate(() => window.GRANDSTAND.match.winner !== null), 'PvP match produced a winner');
 
 console.log('');

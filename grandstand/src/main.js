@@ -1,21 +1,27 @@
 /**
  * GRANDSTAND — boot, screens, input, loop.
  *
- * The canvas shows the world. Everything you read or press is real DOM below
- * it, which is what makes this playable on a phone in a pub without squinting.
+ * Flow: title -> setup -> character select -> ladder -> fight -> ladder -> ...
+ *
+ * The canvas shows the world; everything you read or press is real DOM below
+ * it. That split is what makes this playable on a phone in a pub without
+ * squinting, and it means the quiz text is selectable, scalable and screen
+ * readable rather than blitted pixels.
  */
 
-import { setupCanvas, drawMap, drawBattleScene, drawTitleScene, drawTitleWordmark,
-         drawMinimap, VIEW_W, VIEW_H } from './engine/render.js';
-import { drawPortrait } from './engine/sprites.js';
+import { setupCanvas, drawBattleScene, drawSelectScene, drawLadderScene,
+         drawTitleScene, drawTitleWordmark, drawStars,
+         rungPos, ladderWidth, VIEW_W, VIEW_H } from './engine/render.js';
+import { drawFace, drawPortrait, PORTRAIT_W, PORTRAIT_H } from './engine/sprites.js';
 import { initAudio, sfx, setMuted, isMuted } from './engine/audio.js';
 import { Battle, PHASE, ANSWER_MS } from './game/battle.js';
 import { PvpMatch, PVP_PHASE } from './game/pvp.js';
-import { Run, loadSave, recordRun, recordBeaten, savePrefs, makeSeedFrom, seedName,
-         START_ENERGY, BATTLE_TURN_COST } from './game/state.js';
-import { TILE } from './game/map.js';
+import { KIND, RUNGS } from './game/ladder.js';
+import { Run, loadSave, recordRun, recordBeaten, savePrefs, wipeSave,
+         makeSeedFrom, seedName, ENTER_COST, BATTLE_TURN_COST } from './game/state.js';
 import { SPORTS, availableSports, countBySport, QUESTIONS } from './data/questions.js';
-import { ROSTER, PLAYER_KITS, findFighter } from './data/roster.js';
+import { CHARACTERS, findCharacter } from './data/characters.js';
+import { ROSTER, findFighter } from './data/roster.js';
 
 const $ = (id) => document.getElementById(id);
 const panel = $('panel');
@@ -24,33 +30,30 @@ const { ctx, resize } = setupCanvas($('game'));
 
 const G = {
   screen: 'title',
-  run: null,
-  battle: null,
-  match: null,
-  enc: null,
+  run: null, battle: null, match: null, rung: null,
   t: 0,
-  cam: { x: 0, y: 0 },
+  camX: 0,
   scene: { player: null, foe: null, floaters: [], shake: 0, playerFlash: 0, foeFlash: 0,
-           playerWind: 0, foeWind: 0, playerDown: false, foeDown: false, venue: 'THE REC' },
-  setup: { mode: 'career', sports: [], kit: 0, name: 'YOU', name2: 'THEM', seed: '' },
-  timer: { running: false, start: 0 },
-  venueFlash: null,
-  lastVenue: null,
-  visited: new Set(),
+           playerPose: null, foePose: null, playerDown: false, foeDown: false,
+           venue: 'THE REC' },
+  setup: { mode: 'career', sports: [], character: 'ringer', name: 'YOU', name2: 'THEM', seed: '' },
+  timer: { running: false, start: 0, lastTick: 0 },
   busy: false,
 };
 
 const save = loadSave();
 G.setup.sports = save.lastSports || [];
-G.setup.kit = save.lastKit || 0;
+G.setup.character = save.lastCharacter || 'ringer';
 G.setup.name = save.lastName || 'YOU';
 setMuted(!!save.muted);
 
-// ── tiny helpers ───────────────────────────────────────────────────────────
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// ── helpers ────────────────────────────────────────────────────────────────
+const esc = (s) => String(s).replace(/[&<>"]/g,
+  (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const pct = (a, b) => `${Math.max(0, Math.min(100, (a / b) * 100))}%`;
+const starStr = (n, of = 3) => '★'.repeat(n) + '☆'.repeat(Math.max(0, of - n));
 
-function toast(msg, ms = 1600) {
+function toast(msg, ms = 1700) {
   const el = document.createElement('div');
   el.className = 'toast';
   el.textContent = msg;
@@ -63,11 +66,11 @@ function shakeStage(power = 1) {
   stage.classList.remove('shake');
   void stage.offsetWidth;
   stage.classList.add('shake');
-  setTimeout(() => { G.scene.shake = 0; }, 220);
+  setTimeout(() => { G.scene.shake = 0; }, 230);
 }
 
 function floater(text, x, y, colour, big = false) {
-  G.scene.floaters.push({ text, x, y, vy: -0.7, life: 44, colour, big });
+  G.scene.floaters.push({ text, x, y, vy: -0.8, life: 46, colour, big });
 }
 
 function setHud(on) { $('hud').classList.toggle('on', on); }
@@ -84,23 +87,16 @@ function updateHud() {
   $('rep-chip').textContent = `REP ${r.rep}`;
 }
 
-function show(html) {
-  panel.innerHTML = html;
-  panel.scrollTop = 0;
-}
+function show(html) { panel.innerHTML = html; panel.scrollTop = 0; }
 
-// ── sizing: the canvas takes a fixed 16:9 slice of the viewport ───────────
 function layout() {
-  const app = document.getElementById('app');
+  const app = $('app');
   const hudH = $('hud').classList.contains('on') ? $('hud').offsetHeight : 0;
-  // Give the stage a provisional budget, let resize() pick the integer scale
-  // that fits, then shrink the stage to exactly that — so there are never
-  // letterbox bars above and below the picture.
-  const budget = Math.min((app.clientHeight - hudH) * 0.54, app.clientWidth * 0.62);
+  const budget = Math.min((app.clientHeight - hudH) * 0.54, app.clientWidth * 0.60);
   stage.style.height = `${Math.max(120, Math.round(budget))}px`;
   resize();
-  const drawnH = $('game').getBoundingClientRect().height;
-  if (drawnH > 0) stage.style.height = `${Math.round(drawnH)}px`;
+  const drawn = $('game').getBoundingClientRect().height;
+  if (drawn > 0) stage.style.height = `${Math.round(drawn)}px`;
 }
 window.addEventListener('resize', layout);
 
@@ -114,7 +110,6 @@ function screenTitle() {
   const best = save.bestRep ? `BEST DAY: ${save.bestRep} REP` : 'NO RESULT RECORDED';
   show(`
     <div class="screen on">
-      <h1>GRANDSTAND</h1>
       <p class="dim small">A turn-based sports-quiz RPG. Every answer is a whole
       number, and the number is how hard you hit.</p>
       <div class="btn-row">
@@ -128,7 +123,8 @@ function screenTitle() {
         <button data-act="codex">THE ROSTER</button>
         <button data-act="howto">HOW TO PLAY</button>
       </div>
-      <p class="dim small">${esc(best)} · ${QUESTIONS.length} questions · ${ROSTER.length} opponents</p>
+      <p class="dim small">${esc(best)} · ${QUESTIONS.length} questions ·
+        ${ROSTER.length} opponents · ${CHARACTERS.length} fighters</p>
     </div>`);
   layout();
 }
@@ -140,8 +136,8 @@ function screenHowTo() {
       <h2>HOW TO PLAY</h2>
       <div class="card">
         <h3>THE IDEA</h3>
-        <p class="small">You walk round a municipal sports complex. People who were
-        on the telly in 1987 want a word. You settle it with a quiz.</p>
+        <p class="small">Pick a fighter, then climb a ladder of people who were
+        on the telly in 1987. Each rung is settled with a quiz.</p>
       </div>
       <div class="card gold">
         <h3>YOUR GO — <span style="color:var(--gold)">STRIKE</span></h3>
@@ -149,11 +145,17 @@ function screenHowTo() {
         Pick the biggest number and you hit hardest. Pick a smaller one and you
         still connect — just softer. The number <i>is</i> the damage.</p>
       </div>
-      <div class="card" style="border-color:var(--blue)">
+      <div class="card blue">
         <h3>THEIR GO — <span style="color:var(--blue)">BLOCK</span></h3>
         <p class="small">Now you're asked who has the <b>FEWEST</b>. Pick the
         smallest number to take the sting out of what's coming. Getting the two
         the wrong way round is how everybody loses.</p>
+      </div>
+      <div class="card">
+        <h3>STARS</h3>
+        <p class="small">Every rung is worth three. One for winning, one for
+        answering well, one for finishing in decent nick. Go back down and beat
+        someone properly if you want the third.</p>
       </div>
       <div class="card">
         <h3>THE CLOCK, COMBOS, CARDS</h3>
@@ -162,19 +164,14 @@ function screenHowTo() {
         and you're booked — two yellows and you sit an exchange out.</p>
       </div>
       <div class="card">
-        <h3>NUTMEG</h3>
-        <p class="small">Three per day. Burns one duff option off the board and
-        leaves you a 50:50. Save them for the big names.</p>
-      </div>
-      <div class="card">
         <h3>ENERGY</h3>
-        <p class="small">Every step costs energy. So does every exchange. When
-        it's gone, the day's over and you get your score. Oranges, Lucozade and
-        pies are lying about — pick them up.</p>
+        <p class="small">Walking out to face someone costs ${ENTER_COST}. Every
+        exchange costs 1 more. When it's gone, the day's over and you get your
+        score. Rung 4 is the physio, rung 8 is a freebie.</p>
       </div>
       <div class="card">
         <h3>KEYS</h3>
-        <p class="small"><span class="kbd">ARROWS</span> or <span class="kbd">WASD</span> move ·
+        <p class="small"><span class="kbd">◀ ▶</span> move along the ladder ·
         <span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span> answer ·
         <span class="kbd">N</span> nutmeg · <span class="kbd">ENTER</span> continue ·
         <span class="kbd">M</span> mute</p>
@@ -187,18 +184,12 @@ function screenSetup(mode) {
   G.screen = 'setup';
   G.setup.mode = mode;
   setHud(false);
-  const sportsList = availableSports();
   const counts = countBySport();
-  const chips = sportsList.map((s) => {
+  const chips = availableSports().map((s) => {
     const on = G.setup.sports.includes(s);
-    return `<button class="small-btn ${on ? 'on' : ''}" data-act="toggle-sport" data-sport="${s}">
+    return `<button class="chip ${on ? 'on' : ''}" data-act="toggle-sport" data-sport="${s}">
       ${esc(SPORTS[s].name)} <span class="dim">${counts[s]}</span></button>`;
   }).join('');
-
-  const kits = PLAYER_KITS.map((k, i) =>
-    `<button class="small-btn ${G.setup.kit === i ? 'on' : ''}" data-act="kit" data-i="${i}">${esc(k.name)}</button>`
-  ).join('');
-
   const pool = G.setup.sports.length
     ? QUESTIONS.filter((q) => G.setup.sports.includes(q.sport)).length
     : QUESTIONS.length;
@@ -206,7 +197,6 @@ function screenSetup(mode) {
   show(`
     <div class="screen on">
       <h2>${mode === 'pvp' ? 'HOT-SEAT PvP' : 'A DAY OUT'}</h2>
-
       <div class="card">
         <h3>SPORTS — PICK SOME, OR LEAVE IT EMPTY FOR THE LOT</h3>
         <div class="chip-row">${chips}</div>
@@ -214,111 +204,170 @@ function screenSetup(mode) {
           · ${pool} questions in play</p>
         ${pool < 12 ? '<div class="warn-strip">Thin pool — questions will repeat. Add another sport.</div>' : ''}
       </div>
-
       ${mode === 'pvp' ? `
         <div class="card">
           <h3>PLAYERS</h3>
           <label class="small dim">PLAYER ONE</label>
-          <input id="p1name" value="${esc(G.setup.name)}" maxlength="10"
-            style="font-family:var(--head);font-size:11px;padding:9px;background:#0d0b14;color:var(--ink);border:3px solid var(--line)">
+          <input id="p1name" class="txt" value="${esc(G.setup.name)}" maxlength="10">
           <label class="small dim">PLAYER TWO</label>
-          <input id="p2name" value="${esc(G.setup.name2)}" maxlength="10"
-            style="font-family:var(--head);font-size:11px;padding:9px;background:#0d0b14;color:var(--ink);border:3px solid var(--line)">
-          <p class="small dim">One device. You take it in turns and pass it over.
-          There's a screen in between so nobody reads over a shoulder.</p>
-        </div>
-      ` : `
+          <input id="p2name" class="txt" value="${esc(G.setup.name2)}" maxlength="10">
+          <p class="small dim">One device. You take it in turns and pass it over.</p>
+        </div>` : `
         <div class="card">
-          <h3>YOUR KIT</h3>
-          <div class="chip-row">${kits}</div>
-        </div>
-        <div class="card">
-          <h3>SEED — LEAVE BLANK FOR A RANDOM COMPLEX</h3>
-          <input id="seedin" value="${esc(G.setup.seed)}" maxlength="16" placeholder="e.g. SHEARER"
-            style="font-family:var(--head);font-size:11px;padding:9px;background:#0d0b14;color:var(--ink);border:3px solid var(--line)">
-          <p class="small dim">Same seed, same map and same opponents. Type one in to
-          give someone else the exact day you had.</p>
-        </div>
-      `}
-
+          <h3>SEED — LEAVE BLANK FOR A RANDOM LADDER</h3>
+          <input id="seedin" class="txt" value="${esc(G.setup.seed)}" maxlength="16" placeholder="e.g. SHEARER">
+          <p class="small dim">Same seed, same opponents in the same order.</p>
+        </div>`}
       <div class="btn-row">
-        <button class="primary" data-act="${mode === 'pvp' ? 'start-pvp' : 'start-run'}">
-          ${mode === 'pvp' ? 'THROW IN' : 'KICK OFF'}</button>
+        <button class="primary" data-act="${mode === 'pvp' ? 'start-pvp' : 'go-select'}">
+          ${mode === 'pvp' ? 'THROW IN' : 'CHOOSE YOUR FIGHTER'}</button>
         <button data-act="title">BACK</button>
       </div>
     </div>`);
 }
 
-// ── overworld ──────────────────────────────────────────────────────────────
-function screenMap() {
-  G.screen = 'map';
-  setHud(true);
-  const r = G.run;
-  const room = r.map.roomAt(r.player.x, r.player.y);
-  const left = r.map.remaining();
+// ── character select ───────────────────────────────────────────────────────
+function screenSelect() {
+  G.screen = 'select';
+  setHud(false);
+  const c = findCharacter(G.setup.character);
+  const grid = CHARACTERS.map((ch) => `
+    <button class="pick ${ch.id === G.setup.character ? 'on' : ''}" data-act="pick" data-id="${ch.id}">
+      <canvas class="pickface" data-cid="${ch.id}" width="42" height="42"></canvas>
+      <span class="pickname">${esc(ch.name)}</span>
+    </button>`).join('');
+
+  const perkLines = [];
+  if (c.perk.speedMult) perkLines.push(`Clock bonus ×${c.perk.speedMult}`);
+  if (c.perk.blockFloor) perkLines.push(`Perfect block lets only ${Math.round(c.perk.blockFloor * 100)}% through`);
+  if (c.perk.repMult) perkLines.push(`Rep ×${c.perk.repMult}`);
+  if (c.perk.comboBoost) perkLines.push('Combos build a rung early');
+  if (c.perk.glassJaw) perkLines.push(`Takes ${Math.round((c.perk.glassJaw - 1) * 100)}% extra damage`);
+
   show(`
     <div class="screen on">
-      <div id="pad-wrap">
-        <div id="dpad">
-          <div class="spacer"></div>
-          <button data-act="move" data-dx="0" data-dy="-1">▲</button>
-          <div class="spacer"></div>
-          <button data-act="move" data-dx="-1" data-dy="0">◀</button>
-          <button disabled style="opacity:.3">·</button>
-          <button data-act="move" data-dx="1" data-dy="0">▶</button>
-          <div class="spacer"></div>
-          <button data-act="move" data-dx="0" data-dy="1">▼</button>
-          <div class="spacer"></div>
+      <div class="pick-grid">${grid}</div>
+      <div class="card gold">
+        <h2 style="font-size:11px">${esc(c.name)}</h2>
+        <span class="epithet">${esc(c.epithet)}</span>
+        <div class="stat-grid">
+          <div class="stat"><span class="k">CONDITION</span><span class="v">${c.hp}</span></div>
+          <div class="stat"><span class="k">POWER</span><span class="v">${c.power}</span></div>
+          <div class="stat"><span class="k">NUTMEGS</span><span class="v">${c.nutmegs}</span></div>
         </div>
-        <canvas id="minimap" width="${r.map.w * 3}" height="${r.map.h * 3}"></canvas>
+        <p class="small">${esc(c.blurb)}</p>
+        ${perkLines.length ? `<p class="small" style="color:var(--gold)">${perkLines.map(esc).join(' · ')}</p>` : ''}
       </div>
-      <div id="map-info">
-        <h2 style="font-size:10px">${esc(room ? room.name : 'THE CAR PARK')}</h2>
-        <p class="small dim">${left} still standing · ${r.player.nutmegs}
-          nutmeg${r.player.nutmegs === 1 ? '' : 's'} left</p>
-        <p class="small dim">Walk into someone to have a go. Every step costs energy.
-          <span style="color:var(--red)">Red</span> is an opponent,
-          <span style="color:var(--gold)">gold</span> is the main arena,
-          <span style="color:var(--green)">green</span> is something worth picking up.</p>
-        <div class="btn-row">
-          <button class="small-btn" data-act="codex">ROSTER</button>
-          <button class="small-btn" data-act="end-day">END THE DAY</button>
-        </div>
+      <div class="btn-row">
+        <button class="primary" data-act="start-run">FIGHT</button>
+        <button data-act="go-setup" data-mode="career">BACK</button>
       </div>
     </div>`);
-  paintMinimap();
+  paintPickFaces();
   layout();
-  updateHud();
 }
 
-function paintMinimap() {
-  const c = $('minimap');
-  if (!c || !G.run) return;
-  const cc = c.getContext('2d');
-  cc.imageSmoothingEnabled = false;
-  drawMinimap(cc, G.run.map, G.run.player, G.visited, 3);
+function paintPickFaces() {
+  for (const cv of panel.querySelectorAll('canvas.pickface')) {
+    const ch = findCharacter(cv.dataset.cid);
+    const c = cv.getContext('2d');
+    c.imageSmoothingEnabled = false;
+    c.fillStyle = '#2b2448'; c.fillRect(0, 0, 42, 42);
+    drawFace(c, ch, 1, 0, 40);
+  }
+}
+
+// ── the ladder ─────────────────────────────────────────────────────────────
+function screenLadder() {
+  G.screen = 'ladder';
+  setHud(true);
+  const r = G.run;
+  const rung = r.rung;
+  const l = r.ladder;
+  const canGoBack = r.at > 1;
+  const canGoOn = r.at < RUNGS && l.available(r.at + 1);
+  const isRest = rung.kind === KIND.PHYSIO || rung.kind === KIND.BONUS;
+  const affordable = r.canAfford(ENTER_COST);
+
+  let action;
+  if (rung.cleared && isRest) {
+    action = `<button disabled>ALREADY TAKEN</button>`;
+  } else if (isRest) {
+    action = `<button class="primary" data-act="rest">${rung.kind === KIND.PHYSIO ? 'SEE THE PHYSIO' : 'COLLECT'}</button>`;
+  } else if (!affordable) {
+    action = `<button disabled>NOT ENOUGH ENERGY (${ENTER_COST})</button>`;
+  } else {
+    action = `<button class="primary" data-act="fight">${rung.cleared ? 'REMATCH' : 'HAVE A GO'} (-${ENTER_COST})</button>`;
+  }
+
+  const who = rung.fighter
+    ? `<div class="rung-head">
+         <canvas class="rungface" width="52" height="52"></canvas>
+         <div>
+           <div class="rung-name">${esc(rung.fighter.name)}</div>
+           <span class="epithet">${esc(rung.fighter.epithet)}</span>
+           <div class="small dim">${esc(SPORTS[rung.fighter.sport]?.name || 'ALL SPORTS')}
+             · TIER ${rung.fighter.tier} · ${rung.fighter.hp} COND · ${rung.fighter.power} POWER</div>
+         </div>
+       </div>`
+    : `<div class="rung-name">${rung.kind === KIND.PHYSIO ? 'THE PHYSIO ROOM' : 'THE CLUB SHOP'}</div>
+       <p class="small dim">${rung.kind === KIND.PHYSIO
+          ? 'Magic sponge, cold spray, back out you go. Restores over half your condition.'
+          : 'A match programme and a spare nutmeg. Take it, you have earned it.'}</p>`;
+
+  show(`
+    <div class="screen on">
+      <div class="ladder-bar">
+        <button class="nav" data-act="rung-prev" ${canGoBack ? '' : 'disabled'}>◀</button>
+        <div class="ladder-meta">
+          <div class="small dim">RUNG ${rung.n} OF ${RUNGS} · ${esc(rung.venue)}</div>
+          <div class="stars-line">${starStr(rung.stars)}
+            <span class="dim">${l.totalStars()}/${l.maxStars()} TOTAL</span></div>
+        </div>
+        <button class="nav" data-act="rung-next" ${canGoOn ? '' : 'disabled'}>▶</button>
+      </div>
+      <div class="card ${rung.kind === KIND.BOSS ? 'red' : ''}">
+        ${who}
+        ${rung.fighter ? `<p class="small">"${esc(rung.fighter.taunt)}"</p>` : ''}
+      </div>
+      <div class="btn-row">${action}</div>
+      <div class="btn-row">
+        <button class="small-btn" data-act="codex">ROSTER</button>
+        <button class="small-btn" data-act="end-day">END THE DAY</button>
+      </div>
+      <p class="small dim">${r.player.nutmegs} nutmeg${r.player.nutmegs === 1 ? '' : 's'} left
+        · ${l.clearedCount()}/${RUNGS} rungs cleared</p>
+    </div>`);
+
+  const fc = panel.querySelector('canvas.rungface');
+  if (fc && rung.fighter) {
+    const c = fc.getContext('2d');
+    c.imageSmoothingEnabled = false;
+    c.fillStyle = '#2b2448'; c.fillRect(0, 0, 52, 52);
+    drawFace(c, rung.fighter, 1, 0, 50);
+  }
+  layout();
+  updateHud();
 }
 
 // ── battle ─────────────────────────────────────────────────────────────────
 function fighterBars() {
   const b = G.battle;
   const p = G.run.player;
-  const foeHurt = b.foe.hp / b.foe.maxHp < 0.35;
   return `
     <div class="fighter-bar">
       <div class="row">
         <span class="nm" style="color:var(--red)">${esc(b.foe.name)}</span>
         <span class="hpnum">${b.foe.hp}/${b.foe.maxHp}</span>
       </div>
-      <div class="hp-track"><div class="hp-fill foe" id="foe-hp" style="width:${pct(b.foe.hp, b.foe.maxHp)}"></div></div>
-      <span class="epithet">${esc(b.foe.epithet)}</span>
+      <div class="hp-track"><div class="hp-fill foe" style="width:${pct(b.foe.hp, b.foe.maxHp)}"></div></div>
     </div>
     <div class="fighter-bar">
       <div class="row">
         <span class="nm" style="color:var(--green)">${esc(p.name)}</span>
         <span class="hpnum">${p.hp}/${p.maxHp}${b.combo > 1 ? ` · COMBO ×${b.comboMult()}` : ''}</span>
       </div>
-      <div class="hp-track"><div class="hp-fill ${p.hp / p.maxHp < 0.35 ? 'hurt' : ''}" id="my-hp"
+      <div class="hp-track"><div class="hp-fill ${p.hp / p.maxHp < 0.35 ? 'hurt' : ''}"
         style="width:${pct(p.hp, p.maxHp)}"></div></div>
     </div>`;
 }
@@ -330,12 +379,12 @@ function screenBattleIntro() {
     <div class="screen on">
       ${fighterBars()}
       <div class="card red">
-        <h3>${esc(b.foe.venueName || G.scene.venue)}</h3>
+        <h3>${esc(G.scene.venue)} · RUNG ${G.rung.n}</h3>
         <p>"${esc(b.foe.taunt)}"</p>
       </div>
       <div class="btn-row">
-        <button class="primary" data-act="fight">HAVE A GO</button>
-        <button data-act="leg-it">LEG IT (-10 ENERGY)</button>
+        <button class="primary" data-act="begin">SECONDS OUT</button>
+        <button data-act="leg-it">LEG IT</button>
       </div>
     </div>`);
   layout();
@@ -346,8 +395,6 @@ function screenQuestion() {
   const b = G.battle;
   const isBlock = b.phase === PHASE.BLOCK;
   const q = b.question;
-  const prompt = isBlock ? q.least : q.most;
-
   const opts = q.options.map((o, i) => `
     <button class="opt ${b.eliminated.includes(i) ? 'gone' : ''}" data-act="answer" data-i="${i}">
       <span class="num">${i + 1}</span>
@@ -363,7 +410,7 @@ function screenQuestion() {
         <span class="dim">${esc(SPORTS[q.sport]?.name || q.sport)}</span>
       </div>
       <div id="timer-track"><div id="timer-fill"></div></div>
-      <div class="q-prompt ${isBlock ? 'block' : ''}">${esc(prompt)}</div>
+      <div class="q-prompt ${isBlock ? 'block' : ''}">${esc(isBlock ? q.least : q.most)}</div>
       <div class="q-hint ${isBlock ? 'block' : ''}">
         ${isBlock ? 'PICK THE SMALLEST NUMBER TO BLOCK' : 'PICK THE BIGGEST NUMBER TO HIT HARDEST'}</div>
       ${opts}
@@ -393,9 +440,9 @@ function screenResolve() {
     cls = r.perfect ? 'good' : r.worst ? 'bad' : 'mid';
   }
 
-  const q = b.question;
-  const detail = r.sentOff ? `<p>You take <b style="color:var(--red)">${r.taken}</b>.</p>` :
-    r.phase === PHASE.STRIKE
+  const detail = r.sentOff
+    ? `<p>You take <b style="color:var(--red)">${r.taken}</b>.</p>`
+    : r.phase === PHASE.STRIKE
       ? `<p><b>${esc(r.option.label)}</b> — ${r.option.value} ${esc(r.unit)}
          → <b style="color:var(--gold)">${r.damage} DAMAGE</b>
          ${r.speed > 0.25 ? '<span class="dim">(quick off the mark)</span>' : ''}</p>`
@@ -404,7 +451,7 @@ function screenResolve() {
          ${r.blocked > 0 ? `<span class="dim">(${r.blocked} blocked)</span>` : ''}</p>`;
 
   const cardLine = r.card === 'red'
-    ? '<div class="warn-strip" style="background:var(--red);color:#fff">RED CARD. You sit the next one out.</div>'
+    ? '<div class="warn-strip red">RED CARD. You sit the next one out.</div>'
     : r.card === 'yellow'
       ? '<div class="warn-strip">BOOKED. One more and you\'re off.</div>' : '';
 
@@ -413,9 +460,10 @@ function screenResolve() {
       ${fighterBars()}
       <div class="feedback ${cls}">${esc(head)}</div>
       ${detail}
-      ${!r.sentOff ? `<p class="small dim">Best answer was <b style="color:var(--green)">${r.correctValue} ${esc(r.unit)}</b>.</p>` : ''}
+      ${!r.sentOff ? `<p class="small dim">Best answer was
+        <b style="color:var(--green)">${r.correctValue} ${esc(r.unit)}</b>.</p>` : ''}
       ${cardLine}
-      ${q && q.note && !r.sentOff ? `<div class="note">${esc(q.note)}</div>` : ''}
+      ${b.question && b.question.note && !r.sentOff ? `<div class="note">${esc(b.question.note)}</div>` : ''}
       <div class="btn-row"><button class="primary" data-act="advance">CARRY ON</button></div>
     </div>`);
   layout();
@@ -425,13 +473,14 @@ function screenBattleEnd(won) {
   stopTimer();
   const b = G.battle;
   const s = b.summary();
+  const before = G.rung.stars;
   const vrep = won ? b.victoryRep() : 0;
-  G.run.finishBattle(G.enc, b, won);
+  G.run.finishBattle(G.rung, b, won);
+  const gained = G.rung.stars - before;
   if (won) sfx.win(); else sfx.lose();
 
   G.scene.foeDown = won;
   G.scene.playerDown = !won;
-
   const runOver = G.run.over;
 
   show(`
@@ -439,6 +488,8 @@ function screenBattleEnd(won) {
       <h2 style="color:${won ? 'var(--green)' : 'var(--red)'}">
         ${won ? 'HAVE THAT' : 'STRETCHERED OFF'}</h2>
       <p>"${esc(won ? b.foe.defeat : b.foe.taunt)}"</p>
+      ${won ? `<div class="star-award">${starStr(G.rung.stars)}
+        <span class="small dim">${gained > 0 ? `+${gained} this time` : 'no improvement'}</span></div>` : ''}
       <div class="stat-grid">
         <div class="stat"><span class="k">ANSWERED</span><span class="v">${s.answered}</span></div>
         <div class="stat"><span class="k">PERFECT</span><span class="v">${s.perfects}</span></div>
@@ -447,35 +498,34 @@ function screenBattleEnd(won) {
         <div class="stat"><span class="k">REP</span><span class="v">${s.rep + vrep}</span></div>
         ${s.cards ? `<div class="stat"><span class="k">CARDS</span><span class="v" style="color:var(--red)">${s.cards}</span></div>` : ''}
       </div>
-      ${!won ? '<p class="small dim">You lose 20 energy and pick yourself up on 30% condition.</p>' : ''}
+      ${!won ? '<p class="small dim">You lose energy and pick yourself up on 30% condition.</p>' : ''}
       <div class="btn-row">
-        <button class="primary" data-act="${runOver ? 'results' : 'back-to-map'}">
-          ${runOver ? 'SEE THE SCORE' : 'BACK OUT THERE'}</button>
+        <button class="primary" data-act="${runOver ? 'results' : 'back-to-ladder'}">
+          ${runOver ? 'SEE THE SCORE' : 'BACK TO THE LADDER'}</button>
       </div>
     </div>`);
   layout();
   updateHud();
 }
 
-// ── results ────────────────────────────────────────────────────────────────
+// ── results / tables ───────────────────────────────────────────────────────
 function screenResults() {
   G.screen = 'results';
   setHud(false);
   const r = G.run;
-  if (!r.over) r.end('energy');
+  if (!r.over) r.end('quit');
   const card = r.scoreCard();
   recordBeaten(r.defeatedIds);
-  const s = recordRun(card);
-  Object.assign(save, s);
-
-  const place = s.league.findIndex((x) => x.date === card.date) + 1;
-  const headline = r.outcome === 'champion' ? 'CHAMPION OF THE COMPLEX'
-    : r.outcome === 'ko' ? 'THAT\'S YOUR LOT'
-    : 'FULL TIME';
+  Object.assign(save, recordRun(card));
+  const place = save.league.findIndex((x) => x.date === card.date) + 1;
+  const headline = r.outcome === 'champion' ? 'CHAMPION OF THE LADDER'
+    : r.outcome === 'energy' ? 'THAT\'S YOUR LOT' : 'FULL TIME';
 
   show(`
     <div class="screen on">
-      <h1 style="font-size:15px">${headline}</h1>
+      <h1 style="font-size:17px">${headline}</h1>
+      <p class="small dim">${esc(card.characterName)} · ${card.rungs}/${RUNGS} rungs ·
+        ${card.stars}/${card.maxStars} stars</p>
       <div class="stat-grid">
         <div class="stat"><span class="k">REP</span><span class="v">${card.rep}</span></div>
         <div class="stat"><span class="k">WON</span><span class="v">${card.wins}</span></div>
@@ -485,9 +535,9 @@ function screenResults() {
         <div class="stat"><span class="k">ANSWERED</span><span class="v">${card.answered}</span></div>
       </div>
       <div class="card ${place === 1 ? 'gold' : ''}">
-        <p class="small">${place === 1 ? 'TOP OF THE LEAGUE.' : `You come in at number ${place || '—'} in the league table.`}</p>
-        <p class="small dim">Complex: <b style="color:var(--gold)">${esc(seedName(card.seed))}</b>
-          — give that to someone else and they get the exact same day out.</p>
+        <p class="small">${place === 1 ? 'TOP OF THE LEAGUE.' : `Number ${place || '—'} in the league table.`}</p>
+        <p class="small dim">Ladder: <b style="color:var(--gold)">${esc(seedName(card.seed))}</b>
+          — give that to someone else for the exact same climb.</p>
       </div>
       <div class="btn-row">
         <button class="primary" data-act="go-setup" data-mode="career">GO AGAIN</button>
@@ -505,9 +555,9 @@ function screenLeague() {
   const rows = s.league.length ? s.league.map((c, i) => `
     <tr>
       <td class="n">${i + 1}</td>
-      <td>${esc(c.name)}<br><span class="dim small">${esc(seedName(c.seed))}</span></td>
+      <td>${esc(c.characterName || c.name)}<br><span class="dim small">${esc(seedName(c.seed))}</span></td>
       <td class="n">${c.rep}</td>
-      <td>${c.wins}-${c.losses}<br><span class="dim small">${Math.round(c.accuracy * 100)}%</span></td>
+      <td>${c.wins}-${c.losses}<br><span class="dim small">${c.stars ?? 0}★ · ${Math.round(c.accuracy * 100)}%</span></td>
     </tr>`).join('')
     : '<tr><td colspan="4" class="dim">Nothing on the board yet.</td></tr>';
 
@@ -515,12 +565,11 @@ function screenLeague() {
     <div class="screen on">
       <h2>LEAGUE TABLE</h2>
       <table>
-        <thead><tr><th>#</th><th>NAME / COMPLEX</th><th>REP</th><th>W-L</th></tr></thead>
+        <thead><tr><th>#</th><th>FIGHTER / LADDER</th><th>REP</th><th>W-L</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <p class="small dim">${s.totalRuns} day${s.totalRuns === 1 ? '' : 's'} out ·
-        ${s.beaten.length}/${ROSTER.length} of the roster beaten.
-        Saved on this device only.</p>
+        ${s.beaten.length}/${ROSTER.length} of the roster beaten. Saved on this device only.</p>
       <div class="btn-row">
         <button data-act="title">BACK</button>
         ${s.league.length ? '<button data-act="wipe">WIPE THE RECORD</button>' : ''}
@@ -534,14 +583,12 @@ function screenCodex() {
   const cards = ROSTER.map((f) => {
     const beaten = s.beaten.includes(f.id);
     return `
-      <div class="card" style="${beaten ? 'border-color:var(--green)' : ''}">
-        <div style="display:flex;gap:9px;align-items:center">
-          <canvas class="portrait" data-fid="${f.id}" width="28" height="28"
-            style="image-rendering:pixelated;width:28px;height:28px;flex:0 0 auto"></canvas>
+      <div class="card ${beaten ? 'green' : ''}">
+        <div class="rung-head">
+          <canvas class="portrait" data-fid="${f.id}" width="44" height="44"></canvas>
           <div style="min-width:0">
-            <div style="font-family:var(--head);font-size:9px;color:${beaten ? 'var(--green)' : 'var(--ink)'}">
-              ${esc(f.name)}</div>
-            <div class="epithet">${esc(f.epithet)}</div>
+            <div class="rung-name" style="color:${beaten ? 'var(--green)' : 'var(--ink)'}">${esc(f.name)}</div>
+            <span class="epithet">${esc(f.epithet)}</span>
           </div>
         </div>
         <div class="small dim">${esc(SPORTS[f.sport]?.name || 'ALL SPORTS')} ·
@@ -555,18 +602,20 @@ function screenCodex() {
       <h2>THE ROSTER</h2>
       <p class="small dim">Affectionate fakes, all of them. Nobody real was harmed.</p>
       <div class="btn-grid">${cards}</div>
-      <div class="btn-row"><button data-act="${G.run && !G.run.over ? 'back-to-map' : 'title'}">BACK</button></div>
+      <div class="btn-row"><button data-act="${G.run && !G.run.over ? 'back-to-ladder' : 'title'}">BACK</button></div>
     </div>`);
 
-  for (const c of panel.querySelectorAll('canvas.portrait')) {
-    const f = findFighter(c.dataset.fid);
-    const cc = c.getContext('2d');
-    cc.imageSmoothingEnabled = false;
-    if (f) drawPortrait(cc, f, 0, 0, 28);
+  for (const cv of panel.querySelectorAll('canvas.portrait')) {
+    const f = findFighter(cv.dataset.fid);
+    if (!f) continue;
+    const c = cv.getContext('2d');
+    c.imageSmoothingEnabled = false;
+    c.fillStyle = '#2b2448'; c.fillRect(0, 0, 44, 44);
+    drawFace(c, f, 1, 0, 42);
   }
 }
 
-// ── PvP screens ────────────────────────────────────────────────────────────
+// ── PvP ────────────────────────────────────────────────────────────────────
 function pvpBars() {
   const m = G.match;
   return m.players.map((p, i) => `
@@ -590,9 +639,7 @@ function screenPvpHandover() {
         <h2>PASS IT TO ${esc(m.active.name)}</h2>
         <p class="small dim">Round ${m.round}. Don't look until it's yours.</p>
       </div>
-      <div class="btn-row">
-        <button class="primary" data-act="pvp-begin">I'M ${esc(m.active.name)} — GO</button>
-      </div>
+      <div class="btn-row"><button class="primary" data-act="pvp-begin">I'M ${esc(m.active.name)} — GO</button></div>
     </div>`);
   layout();
 }
@@ -634,8 +681,7 @@ function screenPvpResolve() {
       <div class="feedback ${r.perfect ? 'good' : r.timedOut ? 'bad' : 'mid'}">
         ${r.timedOut ? 'TOO SLOW' : r.perfect ? 'SCREAMER!' : 'GOOD CONTACT'}</div>
       <p><b>${esc(who.name)}</b> picked <b>${esc(r.option.label)}</b> —
-        ${r.option.value} ${esc(r.unit)} →
-        <b style="color:var(--gold)">${r.damage} DAMAGE</b></p>
+        ${r.option.value} ${esc(r.unit)} → <b style="color:var(--gold)">${r.damage} DAMAGE</b></p>
       <p class="small dim">Best answer was <b style="color:var(--green)">${r.correctValue} ${esc(r.unit)}</b>.</p>
       ${r.note ? `<div class="note">${esc(r.note)}</div>` : ''}
       <div class="btn-row"><button class="primary" data-act="pvp-advance">CARRY ON</button></div>
@@ -649,7 +695,7 @@ function screenPvpDone() {
   sfx.win();
   show(`
     <div class="screen on">
-      <h1 style="font-size:16px">${esc(w.name)} WINS</h1>
+      <h1 style="font-size:18px">${esc(w.name)} WINS</h1>
       <div class="stat-grid">
         <div class="stat"><span class="k">${esc(w.name)} ACC</span><span class="v">${Math.round((w.perfects / Math.max(1, w.answered)) * 100)}%</span></div>
         <div class="stat"><span class="k">${esc(l.name)} ACC</span><span class="v">${Math.round((l.perfects / Math.max(1, l.answered)) * 100)}%</span></div>
@@ -666,11 +712,7 @@ function screenPvpDone() {
 // ═══════════════════════════════════════════════════════════════════════════
 // TIMER
 // ═══════════════════════════════════════════════════════════════════════════
-function startTimer() {
-  G.timer.running = true;
-  G.timer.start = performance.now();
-  G.timer.lastTick = 0;
-}
+function startTimer() { G.timer.running = true; G.timer.start = performance.now(); G.timer.lastTick = 0; }
 function stopTimer() { G.timer.running = false; }
 
 function tickTimer() {
@@ -681,12 +723,8 @@ function tickTimer() {
   const frac = Math.max(0, 1 - elapsed / ANSWER_MS);
   el.style.width = `${frac * 100}%`;
   el.className = frac < 0.22 ? 'panic' : frac < 0.5 ? 'warn' : '';
-
   const secs = Math.ceil((ANSWER_MS - elapsed) / 1000);
-  if (secs <= 3 && secs !== G.timer.lastTick && secs > 0) {
-    G.timer.lastTick = secs;
-    sfx.tick();
-  }
+  if (secs <= 3 && secs !== G.timer.lastTick && secs > 0) { G.timer.lastTick = secs; sfx.tick(); }
   if (elapsed >= ANSWER_MS) {
     stopTimer();
     if (G.match && G.match.phase === PVP_PHASE.ANSWER) doPvpAnswer(worstIndexPvp(), ANSWER_MS);
@@ -697,8 +735,7 @@ function tickTimer() {
 function worstIndex() {
   const b = G.battle;
   const vals = b.question.options.map((o) => o.value);
-  const target = b.phase === PHASE.BLOCK ? Math.max(...vals) : Math.min(...vals);
-  return vals.indexOf(target);
+  return vals.indexOf(b.phase === PHASE.BLOCK ? Math.max(...vals) : Math.min(...vals));
 }
 function worstIndexPvp() {
   const vals = G.match.question.options.map((o) => o.value);
@@ -710,20 +747,13 @@ function worstIndexPvp() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function startRun() {
-  const seedInput = $('seedin');
-  G.setup.seed = seedInput ? seedInput.value : '';
   const seed = makeSeedFrom(G.setup.seed);
-  G.run = new Run({ seed, sports: G.setup.sports, kitIndex: G.setup.kit, name: G.setup.name });
-  G.battle = null; G.enc = null;
-  savePrefs({ lastSports: G.setup.sports, lastKit: G.setup.kit, lastName: G.setup.name });
-  G.lastVenue = null;
-  G.visited = new Set();
-  centreCamera(true);
+  G.run = new Run({ seed, sports: G.setup.sports, characterId: G.setup.character, name: G.setup.name });
+  G.battle = null; G.rung = null;
+  savePrefs({ lastSports: G.setup.sports, lastCharacter: G.setup.character, lastName: G.setup.name });
+  G.camX = rungPos(1).x - VIEW_W / 2;
   sfx.whistle();
-  // Mark the starting venue before the first paint, or the minimap opens with
-  // the room you are standing in still fogged.
-  flashVenue(G.run.map.roomAt(G.run.player.x, G.run.player.y));
-  screenMap();
+  screenLadder();
 }
 
 function startPvp() {
@@ -731,8 +761,8 @@ function startPvp() {
   const n2 = ($('p2name')?.value || 'PLAYER 2').toUpperCase().slice(0, 10);
   G.setup.name = n1; G.setup.name2 = n2;
   G.match = new PvpMatch(
-    { name: n1, palette: PLAYER_KITS[0].palette, build: 'normal', gear: 'ball' },
-    { name: n2, palette: PLAYER_KITS[1].palette, build: 'normal', gear: 'gloves' },
+    { ...CHARACTERS[0], name: n1 },
+    { ...CHARACTERS[5], name: n2 },
     { sports: G.setup.sports });
   G.scene.venue = 'THE MAIN ARENA';
   G.scene.player = G.match.players[0];
@@ -743,54 +773,37 @@ function startPvp() {
   screenPvpHandover();
 }
 
-function move(dx, dy) {
-  if (G.screen !== 'map' || G.busy || !G.run || G.run.over) return;
-  const res = G.run.step(dx, dy);
-  updateHud();
-
-  if (res.kind === 'blocked') { sfx.blocked(); return; }
-  if (res.kind === 'pickup') {
-    sfx.pickup();
-    floater(res.pickup.desc, VIEW_W / 2, 60, '#4ade80');
-    toast(`${res.pickup.name} — ${res.pickup.desc}`);
-  } else if (res.kind !== 'encounter') {
-    sfx.step();
-  }
-
-  const room = G.run.map.roomAt(G.run.player.x, G.run.player.y);
-  if (room && room !== G.lastVenue) flashVenue(room);
-
-  if (res.kind === 'encounter') { enterBattle(res.encounter); return; }
-  if (G.run.over) { screenResults(); return; }
-  screenMap();
+function moveRung(delta) {
+  const r = G.run;
+  if (!r || r.over) return;
+  const target = r.at + delta;
+  if (!r.ladder.available(target)) { sfx.blocked(); return; }
+  r.moveTo(target);
+  sfx.step();
+  screenLadder();
 }
 
-function flashVenue(room) {
-  if (!room) return;
-  G.visited.add(room.id);
-  G.lastVenue = room;
-  G.venueFlash = { name: room.name, alpha: 1, life: 90 };
-}
-
-function enterBattle(enc) {
-  G.enc = enc;
-  G.busy = true;
+function enterBattle() {
+  const r = G.run;
+  const rung = r.rung;
+  if (!r.canAfford(ENTER_COST)) { sfx.blocked(); return; }
+  r.spendEnergy(ENTER_COST);
+  G.rung = rung;
   sfx.encounter();
-  const room = G.run.map.roomAt(enc.x, enc.y);
-  G.scene.venue = enc.isBoss ? 'THE MAIN ARENA' : (room ? room.name : 'THE REC');
-  G.battle = new Battle(G.run.player, enc.fighter, {
-    level: enc.level,
+  G.scene.venue = rung.venue;
+  G.battle = new Battle(r.player, rung.fighter, {
+    level: rung.level,
     sports: G.setup.sports,
-    usedQuestions: G.run.usedQuestions,
-    seed: (G.run.seed ^ (enc.x * 7919) ^ (enc.y * 104729)) >>> 0,
+    usedQuestions: r.usedQuestions,
+    seed: (r.seed ^ (rung.n * 104729)) >>> 0,
   });
-  G.battle.foe.venueName = G.scene.venue;
-  G.scene.player = G.run.player;
+  G.scene.player = r.player;
   G.scene.foe = G.battle.foe;
   G.scene.playerDown = G.scene.foeDown = false;
+  G.scene.playerPose = G.scene.foePose = null;
   G.scene.floaters.length = 0;
   setHud(true);
-  G.busy = false;
+  updateHud();
   screenBattleIntro();
 }
 
@@ -802,30 +815,31 @@ function doAnswer(i, forcedMs) {
   stopTimer();
 
   const wasStrike = b.phase === PHASE.STRIKE;
-  if (wasStrike) G.scene.playerWind = 1; else G.scene.foeWind = 1;
+  if (wasStrike) G.scene.playerPose = 'strike'; else G.scene.foePose = 'strike';
 
   G.run.spendEnergy(BATTLE_TURN_COST);
   const r = b.answer(i, forcedMs);
 
   setTimeout(() => {
-    G.scene.playerWind = 0; G.scene.foeWind = 0;
+    G.scene.playerPose = G.scene.foePose = null;
     if (wasStrike) {
-      G.scene.foeFlash = 8;
-      floater(`-${r.damage}`, 230, 96, r.perfect ? '#f7d774' : '#f87171', r.perfect);
+      G.scene.foeFlash = 9;
+      floater(`-${r.damage}`, 340, 140, r.perfect ? '#ffd24a' : '#f87171', r.perfect);
       if (r.perfect) sfx.crit(); else sfx.hit();
-      shakeStage(r.perfect ? 1.6 : 1);
+      shakeStage(r.perfect ? 1.7 : 1);
     } else {
-      G.scene.playerFlash = 8;
-      floater(`-${r.taken}`, 76, 100, '#f87171', r.taken > 30);
+      G.scene.playerFlash = 9;
+      G.scene.playerPose = 'guard';
+      floater(`-${r.taken}`, 96, 146, '#f87171', r.taken > 30);
       if (r.perfect) sfx.block(); else sfx.takeHit();
-      shakeStage(r.perfect ? 0.6 : 1.3);
+      shakeStage(r.perfect ? 0.6 : 1.4);
+      setTimeout(() => { G.scene.playerPose = null; }, 420);
     }
     if (r.card) sfx.card();
     updateHud();
     G.busy = false;
-    if (G.run.over && b.phase !== PHASE.WON) { /* energy gone — still finish the fight */ }
     screenResolve();
-  }, 260);
+  }, 280);
 }
 
 function advanceBattle() {
@@ -833,10 +847,10 @@ function advanceBattle() {
   const next = b.advance();
   if (next === PHASE.WON) { screenBattleEnd(true); return; }
   if (next === PHASE.LOST) { screenBattleEnd(false); return; }
-  if (b.phase === PHASE.RESOLVE) { // sent off — they got a free hit
-    G.scene.playerFlash = 8;
-    floater(`-${b.lastResult.taken}`, 76, 100, '#f87171', true);
-    sfx.takeHit(); shakeStage(1.4); updateHud();
+  if (b.phase === PHASE.RESOLVE) {          // sent off — they got a free hit
+    G.scene.playerFlash = 9;
+    floater(`-${b.lastResult.taken}`, 96, 146, '#f87171', true);
+    sfx.takeHit(); shakeStage(1.5); updateHud();
     screenResolve(); return;
   }
   screenQuestion();
@@ -848,22 +862,22 @@ function doPvpAnswer(i, forcedMs) {
   G.busy = true;
   stopTimer();
   const attacker = m.turn;
-  if (attacker === 0) G.scene.playerWind = 1; else G.scene.foeWind = 1;
+  if (attacker === 0) G.scene.playerPose = 'strike'; else G.scene.foePose = 'strike';
   const r = m.answer(i, forcedMs);
   setTimeout(() => {
-    G.scene.playerWind = 0; G.scene.foeWind = 0;
+    G.scene.playerPose = G.scene.foePose = null;
     if (attacker === 0) {
-      G.scene.foeFlash = 8;
-      floater(`-${r.damage}`, 230, 96, r.perfect ? '#f7d774' : '#f87171', r.perfect);
+      G.scene.foeFlash = 9;
+      floater(`-${r.damage}`, 340, 140, r.perfect ? '#ffd24a' : '#f87171', r.perfect);
     } else {
-      G.scene.playerFlash = 8;
-      floater(`-${r.damage}`, 76, 100, r.perfect ? '#f7d774' : '#f87171', r.perfect);
+      G.scene.playerFlash = 9;
+      floater(`-${r.damage}`, 96, 146, r.perfect ? '#ffd24a' : '#f87171', r.perfect);
     }
     if (r.perfect) sfx.crit(); else sfx.hit();
-    shakeStage(r.perfect ? 1.6 : 1);
+    shakeStage(r.perfect ? 1.7 : 1);
     G.busy = false;
     screenPvpResolve();
-  }, 260);
+  }, 280);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -874,57 +888,62 @@ panel.addEventListener('click', (e) => {
   const btn = e.target.closest('[data-act]');
   if (!btn || btn.disabled) return;
   initAudio();
-  const act = btn.dataset.act;
-
-  switch (act) {
+  switch (btn.dataset.act) {
     case 'title': sfx.back(); screenTitle(); break;
     case 'howto': sfx.select(); screenHowTo(); break;
     case 'go-setup': sfx.select(); screenSetup(btn.dataset.mode); break;
+    case 'go-select':
+      G.setup.seed = $('seedin')?.value || '';
+      sfx.confirm(); screenSelect(); break;
+    case 'pick':
+      G.setup.character = btn.dataset.id; sfx.select(); screenSelect(); break;
     case 'league': sfx.select(); screenLeague(); break;
     case 'codex': sfx.select(); screenCodex(); break;
     case 'wipe':
       if (confirm('Wipe the league table and everything you have beaten? This cannot be undone.')) {
-        localStorage.removeItem('grandstand.save.v1');
-        Object.assign(save, loadSave());
-        screenLeague();
+        wipeSave(); Object.assign(save, loadSave()); screenLeague();
       }
       break;
     case 'toggle-sport': {
       const s = btn.dataset.sport;
-      const idx = G.setup.sports.indexOf(s);
-      if (idx >= 0) G.setup.sports.splice(idx, 1); else G.setup.sports.push(s);
-      sfx.select();
-      screenSetup(G.setup.mode);
-      break;
+      const i = G.setup.sports.indexOf(s);
+      if (i >= 0) G.setup.sports.splice(i, 1); else G.setup.sports.push(s);
+      sfx.select(); screenSetup(G.setup.mode); break;
     }
-    case 'kit': G.setup.kit = +btn.dataset.i; sfx.select(); screenSetup(G.setup.mode); break;
     case 'start-run': sfx.confirm(); startRun(); break;
     case 'start-pvp': sfx.confirm(); startPvp(); break;
-    case 'move': move(+btn.dataset.dx, +btn.dataset.dy); break;
-    case 'end-day':
-      if (confirm('End the day here and take your score?')) { G.run.end('energy'); screenResults(); }
-      break;
-    case 'fight': sfx.confirm(); G.battle.begin(); screenQuestion(); break;
+    case 'rung-prev': moveRung(-1); break;
+    case 'rung-next': moveRung(1); break;
+    case 'fight': sfx.confirm(); enterBattle(); break;
+    case 'rest': {
+      const res = G.run.takeRest();
+      sfx.pickup();
+      if (res) toast(res.kind === KIND.PHYSIO
+        ? `PHYSIO — +${res.healed} CONDITION`
+        : `CLUB SHOP — +${res.rep} REP, +1 NUTMEG`);
+      updateHud(); screenLadder(); break;
+    }
+    case 'begin': sfx.confirm(); G.battle.begin(); screenQuestion(); break;
     case 'leg-it':
-      sfx.back();
-      G.run.spendEnergy(10);
-      G.battle = null;
+      sfx.back(); G.battle = null; G.rung = null;
       updateHud();
-      if (G.run.over) screenResults(); else screenMap();
+      if (G.run.over) screenResults(); else screenLadder();
       break;
     case 'answer': doAnswer(+btn.dataset.i); break;
     case 'nutmeg':
       if (G.battle.useNutmeg()) { sfx.select(); toast('NUTMEG — one option gone'); screenQuestion(); }
       break;
     case 'advance': sfx.select(); advanceBattle(); break;
-    case 'back-to-map': G.battle = null; screenMap(); break;
+    case 'back-to-ladder': G.battle = null; G.rung = null; screenLadder(); break;
+    case 'end-day':
+      if (confirm('End the day here and take your score?')) { G.run.end('quit'); screenResults(); }
+      break;
     case 'results': screenResults(); break;
     case 'pvp-begin': sfx.confirm(); G.match.beginTurn(); screenPvpQuestion(); break;
     case 'pvp-answer': doPvpAnswer(+btn.dataset.i); break;
     case 'pvp-advance': {
       sfx.select();
-      const next = G.match.advance();
-      if (next === PVP_PHASE.DONE) screenPvpDone(); else screenPvpHandover();
+      if (G.match.advance() === PVP_PHASE.DONE) screenPvpDone(); else screenPvpHandover();
       break;
     }
   }
@@ -938,52 +957,40 @@ $('btn-sound').addEventListener('click', () => {
 });
 $('btn-quit').addEventListener('click', () => {
   if (G.run && !G.run.over && confirm('End the day here and take your score?')) {
-    G.run.end('energy'); screenResults();
+    G.run.end('quit'); screenResults();
   }
 });
-
-const KEYMAP = {
-  ArrowUp: [0, -1], w: [0, -1], W: [0, -1],
-  ArrowDown: [0, 1], s: [0, 1], S: [0, 1],
-  ArrowLeft: [-1, 0], a: [-1, 0], A: [-1, 0],
-  ArrowRight: [1, 0], d: [1, 0], D: [1, 0],
-};
 
 window.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT') return;
   initAudio();
-  const mv = KEYMAP[e.key];
-  if (mv && G.screen === 'map') { e.preventDefault(); move(mv[0], mv[1]); return; }
-
+  if (G.screen === 'ladder') {
+    if (e.key === 'ArrowLeft' || e.key === 'a') { e.preventDefault(); moveRung(-1); return; }
+    if (e.key === 'ArrowRight' || e.key === 'd') { e.preventDefault(); moveRung(1); return; }
+  }
   if (e.key === 'm' || e.key === 'M') { $('btn-sound').click(); return; }
-
   if (['1', '2', '3'].includes(e.key)) {
     const i = +e.key - 1;
-    const btn = panel.querySelector(`[data-act="answer"][data-i="${i}"], [data-act="pvp-answer"][data-i="${i}"]`);
-    if (btn && !btn.classList.contains('gone')) { e.preventDefault(); btn.click(); }
+    const b = panel.querySelector(`[data-act="answer"][data-i="${i}"], [data-act="pvp-answer"][data-i="${i}"]`);
+    if (b && !b.classList.contains('gone')) { e.preventDefault(); b.click(); }
     return;
   }
-  if (e.key === 'n' || e.key === 'N') {
-    panel.querySelector('[data-act="nutmeg"]:not([disabled])')?.click();
-    return;
-  }
+  if (e.key === 'n' || e.key === 'N') { panel.querySelector('[data-act="nutmeg"]:not([disabled])')?.click(); return; }
   if (e.key === 'Enter' || e.key === ' ') {
-    const b = panel.querySelector('button.primary');
+    const b = panel.querySelector('button.primary:not([disabled])');
     if (b) { e.preventDefault(); b.click(); }
   }
 });
 
-// swipe to move on touch
+// swipe along the ladder
 let touchStart = null;
 stage.addEventListener('touchstart', (e) => {
   touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 }, { passive: true });
 stage.addEventListener('touchend', (e) => {
-  if (!touchStart || G.screen !== 'map') return;
+  if (!touchStart || G.screen !== 'ladder') return;
   const dx = e.changedTouches[0].clientX - touchStart.x;
-  const dy = e.changedTouches[0].clientY - touchStart.y;
-  if (Math.abs(dx) < 24 && Math.abs(dy) < 24) return;
-  if (Math.abs(dx) > Math.abs(dy)) move(Math.sign(dx), 0); else move(0, Math.sign(dy));
+  if (Math.abs(dx) > 32) moveRung(dx < 0 ? 1 : -1);
   touchStart = null;
 }, { passive: true });
 
@@ -991,59 +998,32 @@ stage.addEventListener('touchend', (e) => {
 // LOOP
 // ═══════════════════════════════════════════════════════════════════════════
 
-function centreCamera(snap = false) {
-  const p = G.run.player;
-  const tx = p.x * TILE + TILE / 2 - VIEW_W / 2;
-  const ty = p.y * TILE + TILE / 2 - VIEW_H / 2;
-  const maxX = G.run.map.w * TILE - VIEW_W;
-  const maxY = G.run.map.h * TILE - VIEW_H;
-  const cx = Math.max(0, Math.min(maxX, tx));
-  const cy = Math.max(0, Math.min(maxY, ty));
-  if (snap) { G.cam.x = cx; G.cam.y = cy; }
-  else { G.cam.x += (cx - G.cam.x) * 0.22; G.cam.y += (cy - G.cam.y) * 0.22; }
-  G.cam.x = Math.round(G.cam.x);
-  G.cam.y = Math.round(G.cam.y);
-}
-
 function frame() {
   G.t++;
   tickTimer();
-
-  // decay hit flashes
   if (G.scene.foeFlash > 0) G.scene.foeFlash--;
   if (G.scene.playerFlash > 0) G.scene.playerFlash--;
-
-  // floaters drift up and fade
   for (let i = G.scene.floaters.length - 1; i >= 0; i--) {
     const f = G.scene.floaters[i];
     f.y += f.vy; f.life--;
     if (f.life <= 0) G.scene.floaters.splice(i, 1);
   }
 
-  if (G.venueFlash) {
-    G.venueFlash.life--;
-    G.venueFlash.alpha = Math.min(1, G.venueFlash.life / 30);
-    if (G.venueFlash.life <= 0) G.venueFlash = null;
-  }
-
   switch (G.screen) {
-    case 'map': {
-      const p = G.run.player;
-      p.px += (p.x * TILE - p.px) * 0.3;
-      p.py += (p.y * TILE - p.py) * 0.3;
-      centreCamera();
-      drawMap(ctx, G.run.map, G.cam, p, G.t, { flashVenue: G.venueFlash });
-      for (const f of G.scene.floaters) {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, f.life / 44);
-        ctx.font = '8px "Press Start 2P", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#000'; ctx.fillText(f.text, f.x + 1, f.y + 1);
-        ctx.fillStyle = f.colour; ctx.fillText(f.text, f.x, f.y);
-        ctx.restore();
-      }
+    case 'ladder': {
+      const target = Math.max(0, Math.min(ladderWidth(RUNGS) - VIEW_W,
+        rungPos(G.run.at).x - VIEW_W / 2));
+      G.camX += (target - G.camX) * 0.14;
+      drawLadderScene(ctx, G.run.ladder, G.run.at, Math.round(G.camX), G.t, G.run.player);
       break;
     }
+    case 'select':
+      drawSelectScene(ctx, {
+        player: findCharacter(G.setup.character),
+        foe: ROSTER[0],
+        hint: 'TAP A FIGHTER BELOW',
+      }, G.t);
+      break;
     case 'battle':
     case 'pvp':
       drawBattleScene(ctx, G.scene, G.t);
@@ -1053,15 +1033,14 @@ function frame() {
       if (G.screen === 'title') drawTitleWordmark(ctx, G.t);
       break;
   }
-
   requestAnimationFrame(frame);
 }
 
 // Exposed for the browser playtest harness in tools/ and for poking about in
 // devtools. Nothing in the game reads it.
 window.GRANDSTAND = G;
+window.GRANDSTAND.__forceResults = () => screenResults();
 
-// ── go ─────────────────────────────────────────────────────────────────────
 $('btn-sound').textContent = isMuted() ? '♪̸' : '♪';
 document.fonts?.ready.then(layout);
 screenTitle();
