@@ -30,9 +30,9 @@
   body{
     background:var(--bg); color:var(--ink);
     font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-    font-size:16.5px; line-height:1.68; -webkit-font-smoothing:antialiased;
+    font-size:16.5px; line-height:1.66; -webkit-font-smoothing:antialiased;
   }
-  .page{max-width:640px; margin:0 auto; padding-inline:20px; padding-block:0 72px;}
+  .page{max-width:660px; margin:0 auto; padding-inline:20px; padding-block:0 72px;}
   p{margin:0 0 17px; max-width:64ch;}
 
   .banner{
@@ -44,63 +44,62 @@
 
   .head{padding-block:46px 30px;}
   .head-rule{height:3px; width:44px; background:var(--accent); margin-bottom:20px;}
-  .head-from{
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
-    letter-spacing:.15em; text-transform:uppercase; color:var(--accent);
-  }
-  .head-sub{
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
-    letter-spacing:.06em; color:var(--muted); margin-top:7px;
+  .head-from{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+             letter-spacing:.15em; text-transform:uppercase; color:var(--accent);}
+  .head-sub{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+            letter-spacing:.06em; color:var(--muted); margin-top:7px;}
+
+  h2{font-family:Archivo,sans-serif; font-weight:700; font-size:19.5px;
+     letter-spacing:-.016em; margin:38px 0 14px; text-wrap:balance;}
+  h3{font-family:Archivo,sans-serif; font-weight:600; font-size:16.5px;
+     color:var(--accent); letter-spacing:-.008em; margin:26px 0 10px;}
+
+  ul.pts{margin:0 0 18px; padding:0; list-style:none;}
+  ul.pts li{position:relative; padding:11px 0 11px 20px;
+            border-top:1px solid var(--rule-soft); font-size:15.5px; line-height:1.58;}
+  ul.pts li:first-child{border-top:none;}
+  ul.pts li::before{content:""; position:absolute; left:2px; top:20px;
+                    width:5px; height:5px; border-radius:50%; background:var(--accent);}
+
+  .pen{
+    margin:24px 0; padding:16px 18px; background:var(--accent-soft);
+    border-radius:8px; font-size:15.5px; line-height:1.58;
   }
 
-  h2{
-    font-family:Archivo,sans-serif; font-weight:700; font-size:19px;
-    letter-spacing:-.015em; margin:36px 0 14px; text-wrap:balance;
-  }
-  .area{margin-bottom:20px;}
-  .area-name{
-    font-family:Archivo,sans-serif; font-weight:600; font-size:16.5px;
-    color:var(--accent); letter-spacing:-.008em;
-  }
-  .area p{margin-top:4px;}
+  .horizon-note{font-size:14.5px; color:var(--muted); margin-bottom:14px;}
+
+  ul.good{margin:0; padding:0; list-style:none;}
+  ul.good li{position:relative; padding:10px 0 10px 27px;
+             border-top:1px solid var(--rule-soft); font-size:15.5px;}
+  ul.good li:first-child{border-top:none;}
+  ul.good li::before{content:"\2713"; position:absolute; left:3px; top:9px;
+                     color:var(--accent); font-size:14px;}
 
   ul.outline{
     margin:0; padding:20px 24px; list-style:none;
     background:var(--surface); border:1px solid var(--rule);
     border-radius:10px; box-shadow:var(--shadow);
   }
-  ul.outline li{
-    position:relative; padding:11px 0 11px 20px;
-    border-top:1px solid var(--rule-soft); font-size:15.5px; line-height:1.55;
-  }
+  ul.outline li{position:relative; padding:11px 0 11px 20px;
+                border-top:1px solid var(--rule-soft); font-size:15.5px; line-height:1.55;}
   ul.outline li:first-child{border-top:none;}
-  ul.outline li::before{
-    content:""; position:absolute; left:2px; top:20px;
-    width:5px; height:5px; border-radius:50%; background:var(--accent);
-  }
-  .tbc{
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:14px;
-    color:var(--accent); background:var(--accent-soft);
-    padding:1px 7px; border-radius:4px;
-  }
+  ul.outline li::before{content:""; position:absolute; left:2px; top:20px;
+                        width:5px; height:5px; border-radius:50%; background:var(--accent);}
+  ul.outline li.alt{color:var(--ink-2); font-size:14.5px;}
+  ul.outline li.alt::before{background:var(--muted);}
+  .tbc{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:14px;
+       color:var(--accent); background:var(--accent-soft); padding:1px 7px; border-radius:4px;}
 
-  .sign{
-    margin-top:34px; padding-top:20px; border-top:1px solid var(--rule);
-    font-family:Archivo,sans-serif; font-weight:600; font-size:18px;
-  }
-  .foot{
-    margin-top:44px; padding-top:18px; border-top:3px solid var(--accent);
-    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px;
-    color:var(--muted); letter-spacing:.05em;
-  }
+  .sign{margin-top:32px; padding-top:20px; border-top:1px solid var(--rule);
+        font-family:Archivo,sans-serif; font-weight:600; font-size:18px;}
+  .foot{margin-top:44px; padding-top:18px; border-top:3px solid var(--accent);
+        font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px;
+        color:var(--muted); letter-spacing:.05em;}
 
-  @media (max-width:430px){
-    body{font-size:16px;}
-    h2{font-size:18px;}
-  }
+  @media (max-width:430px){ body{font-size:16px;} h2{font-size:18px;} }
 </style>
 
-<div class="banner">DRAFT · FEE AND DATES TO BE CONFIRMED</div>
+<div class="banner">DRAFT · START DATE TO BE CONFIRMED</div>
 
 <div class="page">
 
@@ -112,43 +111,60 @@
 
   <p>Hi Dan,</p>
 
-  <p>Thanks for the time yesterday — genuinely useful session, and good to meet Joe properly. As promised, here’s my understanding of where things stand and what I’d propose. Correct anything I’ve got wrong before we go further.</p>
+  <p>Thanks for the time yesterday — genuinely useful session, and good to meet Joe properly. As I mentioned, these are all great problems to solve and it’s credit to you all to be where you are now. I’ve put down my understanding of where things stand and what I’d propose. Please feel free to correct anything I’ve got wrong, or that you want to reprioritise or emphasise.</p>
 
   <h2>Where Secret Mode is</h2>
 
-  <p>You’re growing quickly and the portfolio has grown with you. Galactic Racer lands in a fortnight, a second top-tier IP is signed, Secret Code is standing up, and you now have four live-service titles where eighteen months ago you had a slate of premium launches. That’s a good problem, but it’s outrun the planning around it — and you were all clear-eyed that mistakes are coming purely from load rather than from judgement.</p>
-
-  <p>The goal, as I understood it, is to know what success looks like by January 2028, and to have a plan behind each title that the whole business believes in.</p>
+  <p>Your portfolio is growing quickly and so are your ambitions. Galactic Racer lands in a fortnight and more top-tier IP is signed and inbound. Secret Mode is joining the premier league, and Secret Code is standing up to support it. From a portfolio of small premium games you now have (at least) four live-service titles that deserve your time and attention. That’s a good problem, but it’s outrun the planning around it — and you’re all understandably conscious that something needs to change before mistakes get made from load rather than from judgement.</p>
 
   <h2>Areas that need immediate support</h2>
 
-  <div class="area">
-    <span class="area-name">Portfolio plan.</span>
-    <p>There’s no coherent view across the catalogue, and several titles you want to do more with — Chained Together on console, Asia — have no value-creation plan behind them. Tiering is the obvious first instinct, but it can’t come first: until each title has a growth thesis, you can’t say which should be a tentpole and which is catalogue. The growth plans come first and the tiering falls out of them.</p>
-  </div>
+  <h3>Publishing Triage — building bandwidth into the system</h3>
+  <ul class="pts">
+    <li><b>A path forward, the next 6 months.</b> How does Secret Mode handle the next six months with its existing commitments? “11 launches in March” isn’t feasible, so let’s really understand the real dependencies and constraints, and rebuild a coherent, workable timeline that reduces the immediate pressure.</li>
+    <li><b>Live Ops operating model.</b> What’s the ideal setup for Joe and his teams to succeed, and how do we move towards it over the next six months? How do we build muscle memory into the team so we deliver good, consistent content efficiently.</li>
+    <li><b>Live Ops opportunities.</b> What are the team doing today and what are they missing? Are there greater opportunities to unlock that next 30%? A good example would be analytics, and standing up telemetry for key titles.</li>
+  </ul>
 
-  <div class="area">
-    <span class="area-name">Programme management.</span>
-    <p>Eleven launches of note currently sit in March 2027, and the team is living week to week. What’s missing is a holistic view of the whole slate — real dependencies, real constraints, and an honest separation of what’s genuinely fixed from what only feels fixed. This is the thing hurting now, so it’s where I’d start.</p>
-  </div>
+  <h3>Portfolio Planning</h3>
+  <p>As the portfolio grows, so does the complexity of keeping all the plates spinning. As things stand there’s no coherent view across the entire catalogue, and several titles you want to do more with — Chained Together, Backrooms, SCUM — have no franchise growth plans behind them.</p>
+  <p>We discussed tiering the service we offer, but it can’t come until each title has a growth thesis. Until you have that, you can’t say which should be a tentpole and which is catalogue. The growth plans come first, and the tiering falls out of them.</p>
+  <p>Our focus would be what success looks like in January 2028, and the route to it.</p>
+  <ul class="pts">
+    <li><b>Growth plans per priority IP.</b> What each title could become, the ranked moves, and the commercial ROI behind each.</li>
+    <li><b>Portfolio map and prioritisation.</b> Once each title has a growth thesis, Tier A / B / C assigns itself, along with the resourcing each tier earns.</li>
+    <li><b>Growth plan kick-off.</b> Which of the high-priority growth moves need a plan around them, who owns each, and how best to get started.</li>
+    <li><b>Communicate the outlook.</b> An exciting and holistic portfolio plan that creates clarity for you, your teams and Emona.</li>
+  </ul>
 
-  <div class="area">
-    <span class="area-name">Ownership.</span>
-    <p>Commercial signs the deals and secures the platform commitments. Marketing takes titles to market. The franchise plan that sits between them belongs to neither, so it doesn’t get written. That’s the gap I’d be filling — and the job is to fill it, build a v1.0 everyone believes in, then hand the pen to someone internal and make myself unnecessary.</p>
-  </div>
+  <div class="pen">Practically, I’d be holding the pen on all of this until it’s built and working, then handing it to whoever owns it permanently. The aim is to make the role unnecessary.</div>
+
+  <h2>What good could look like at the end of Q1 2027 <span style="font-weight:400; color:var(--muted); font-size:15px;">(WIP)</span></h2>
+
+  <p class="horizon-note">January 2028 is the destination the plan describes. This is what I’d want to be true by the time the engagement ends.</p>
+
+  <ul class="good">
+    <li>The leadership team across Secret Mode all reference the same portfolio map, unprompted.</li>
+    <li>Q1 2027 has become a workable shape for Marketing, and the live-service team is taking significant shape.</li>
+    <li>Portfolio tiers are assigned to titles, and resourcing follows them.</li>
+    <li>Two or three growth plans are in execution, not just written.</li>
+    <li>An analyst is in post and insights are flowing.</li>
+  </ul>
 
   <h2>Outline of engagement</h2>
 
   <ul class="outline">
-    <li>Two to three days a week across all three areas, including a weekly sync.</li>
-    <li>Initial term <span class="tbc">12 October 2026 to 11 April 2027</span>.</li>
-    <li><span class="tbc">£xxxx</span> over the 26-week period, invoiced monthly (<span class="tbc">£xk</span>).</li>
-    <li>To be reviewed in early January to agree what the second half looks like.</li>
+    <li>Three days a week, including a weekly sync.</li>
+    <li>Starting <span class="tbc">[date]</span>.</li>
+    <li>Initial term six months, two months’ notice either side.</li>
+    <li><b>£84,000 plus VAT</b> over the 26-week period, invoiced monthly (£14k).</li>
+    <li>Reviewed at the end of January to agree scope and shape for the second half.</li>
+    <li class="alt">If you’d rather start smaller, two days at £11k works — but I’d flag that the programme management side is hard to run properly on two, so we’d need to look again at scope.</li>
   </ul>
 
-  <p style="margin-top:26px;">One ask: I’d like a short conversation with Alison before we finalise this. The franchise plan is as much Commercial’s as Marketing’s, and it’ll be a better piece of work — and a far more likely one to stick — if she’s shaped the scope rather than received it.</p>
+  <p style="margin-top:26px;">One ask: I’d suggest a short conversation with Alison as we finalise this. The franchise plan is as much Commercial’s as Marketing’s, and it’ll be a better piece of work — and a far more likely one to stick — if she’s shaped the scope rather than received it. Happy to take your lead on that, Dan/Ed.</p>
 
-  <p>Two honest notes to finish. First, I think an analyst is the cheapest gap you have to close, and I’d rather say that now than quietly work around it for six months — with no telemetry and nobody crunching the feeds you already have, everything any of us recommends is an argument rather than evidence. Second, my gut says March will need more than three days a week, but I’d rather start here and flex than pad it up front. I’m here to help.</p>
+  <p>I’ll say it again: you’re in a fantastic position, and all of these things are very solvable with the right time and focus on them. Looking forward to helping you.</p>
 
   <div class="sign">Neil</div>
 
