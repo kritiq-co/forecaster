@@ -198,10 +198,15 @@ Worth one question before you send: *"Is there a level at which this needs sign-
 
 ## 9. Settled
 
-**£12,000 a month, £72,000 over the 26 weeks, three days a week — £923 a day.**
+**£13,000 a month, £78,000 over the 26 weeks, three days a week — £1,000 a day exactly.**
 
-Below the £1,077 recommended above and below the fractional floor, taken deliberately to
-secure the engagement. That is a legitimate call and it is made.
+Below the £1,077 benchmarked above, but back inside the fractional band and on a round number
+that is easy to hold in a negotiation and easy to defend if anyone asks how it was derived.
+Roughly 7% under the recommendation, which is a sensible price for wanting the work.
+
+Plus travel and reasonable expenses at cost, agreed in advance — added because three days a
+week for 26 weeks at a Leamington Spa or Sheffield site is real money, and at this rate it is
+not absorbable.
 
 Two consequences worth holding on to:
 

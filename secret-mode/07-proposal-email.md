@@ -28,7 +28,8 @@ The goal, as I understood it, is to know what success looks like by January 2028
 
 - Two to three days a week across all three areas, including a weekly sync.
 - Starting 12 October. Initial term six months, two months' notice either side.
-- £72,000 plus VAT over the 26-week period, invoiced monthly (£12k).
+- £78,000 plus VAT over the 26-week period, invoiced monthly (£13k).
+- Travel and reasonable expenses at cost, agreed in advance.
 - To be reviewed in early January to agree what the second half looks like.
 
 One ask: I'd like a short conversation with Alison before we finalise this. The franchise plan is as much Commercial's as Marketing's, and it'll be a better piece of work — and a far more likely one to stick — if she's shaped the scope rather than received it.
