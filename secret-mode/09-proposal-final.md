@@ -41,7 +41,7 @@ Thanks for the time yesterday. Useful session, and good to meet Joe properly. As
 
 **Where Secret Mode is**
 
-Your portfolio is growing quickly and so are your ambitions. Galactic Racer lands in a fortnight and more top-tier IP is signed and inbound. Secret Mode is joining the premier league, and Secret Code is standing up to support it. From a portfolio of small premium games you now have (at least) four live-service titles that deserve your time and attention. That's a good problem, but it's outrun the planning around it, and you're all understandably conscious that something needs to change before mistakes get made from load rather than from judgement.
+Your portfolio is growing quickly and so are your ambitions. Galactic Racer lands in a fortnight and more top-tier IP is signed and inbound. Secret Mode is joining the premier league, and Secret Code is standing up to support it. Caretaker development has turned a portfolio of small premium games into (at least) four live-service titles that deserve your time and attention. That's a good problem, but it's outrun the planning around it, and you're all understandably conscious that something needs to change before mistakes get made from load rather than from judgement.
 
 **Areas that need immediate support**
 
@@ -53,7 +53,7 @@ Your portfolio is growing quickly and so are your ambitions. Galactic Racer land
 
 *Portfolio Planning*
 
-As the portfolio grows, so does the complexity of keeping all the plates spinning. As things stand there's no coherent view across the entire catalogue, and several titles you want to do more with (Chained Together, Backrooms, SCUM) have no franchise growth plans behind them.
+As the portfolio grows, so does the complexity of keeping all the plates spinning. As things stand there's no coherent view across the entire catalogue, and several titles you want to do more with (Chained Together, Backrooms, Wobbledogs, SCUM) have no franchise growth plans behind them.
 
 We discussed tiering the service we offer, but it can't come until each title has a growth thesis. Until you have that, you can't say which should be a tentpole and which is catalogue. The growth plans come first, and the tiering falls out of them.
 
@@ -81,9 +81,8 @@ January 2028 is what the plan builds towards. This is what I'd want to be true b
 - Three days a week, including a weekly sync.
 - Starting [date].
 - Initial term six months, two months' notice either side.
-- £84,000 plus VAT over the 26-week period, invoiced monthly (£14k).
+- £72,000 plus VAT over the 26-week period, invoiced monthly (£12k).
 - Reviewed at the end of January to agree scope and shape for the second half.
-- If you'd rather start smaller, two days at £11k works, but I'd flag that the programme management side is hard to run properly on two, so we'd need to look again at scope.
 
 One ask: I'd suggest a short conversation with Alison as we finalise this. The franchise plan is as much Commercial's as Marketing's, and it'll be a better piece of work, and far more likely to stick, if she's shaped the scope rather than received it. Happy to take your lead on that, Dan/Ed.
 

@@ -192,3 +192,24 @@ That's honest, it's useful, and it makes the case for three without holding a gu
 **Dan's approval limit.** If £84k crosses a threshold that £66k doesn't, B stops being the easier sell and becomes a trip to Ed and Emona — which delays an ASAP start by weeks and hands the decision to people who weren't in the room.
 
 Worth one question before you send: *"Is there a level at which this needs sign-off beyond you?"* Cheap to ask, and it's the only thing that would make A the better play.
+
+
+---
+
+## 9. Settled
+
+**£12,000 a month, £72,000 over the 26 weeks, three days a week — £923 a day.**
+
+Below the £1,077 recommended above and below the fractional floor, taken deliberately to
+secure the engagement. That is a legitimate call and it is made.
+
+Two consequences worth holding on to:
+
+- **The end-of-January review is now the reprice point, not just a rescope.** It is the only
+  mechanism in the agreement that corrects the rate, and the draft already says March will
+  need more than three days. Go into that conversation having delivered, with the overage
+  visible.
+- **The two-day fallback had to come out.** At £11k for two days it worked out at £1,269 a
+  day against £923 for three — a cheaper headline that cost them more per day for a third
+  less time. Anyone who did the arithmetic would have asked why. It is also the wrong thing
+  to offer when the goal is to secure three days.
