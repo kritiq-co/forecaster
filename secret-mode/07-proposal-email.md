@@ -12,7 +12,7 @@ Thanks for the time yesterday — genuinely useful session, and good to meet Joe
 
 **Where Secret Mode is**
 
-You're growing quickly and the portfolio has grown with you. Galactic Racer lands in a fortnight, a second top-tier IP is signed, Secret Code is standing up, and you now have four live-service titles where eighteen months ago you had a slate of premium launches. That's a good problem, but it's outrun the planning around it — and you were all clear-eyed that mistakes are coming purely from load rather than from judgement.
+You're growing quickly and the portfolio has grown with you. Galactic Racer lands in a fortnight, a second top-tier IP is signed, Secret Code is standing up, and caretaker development has given you four live-service titles where eighteen months ago you had a slate of premium launches. That's a good problem, but it's outrun the planning around it — and you were all clear-eyed that mistakes are coming purely from load rather than from judgement.
 
 The goal, as I understood it, is to know what success looks like by January 2028 and to have a plan behind each title that the whole business believes in.
 
